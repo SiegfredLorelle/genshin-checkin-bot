@@ -1,7 +1,7 @@
 # Epic List
 
 ## Epic 1: **Foundation & Local Proof of Concept**
-Establish project infrastructure, local development environment, and demonstrate core automation feasibility through successful local HoYoLAB check-in execution.
+Establish project infrastructure, local development environment, and demonstrate core automation feasibility through successful local HoYoLAB check-in execution using hardcoded credentials. Focus on local validation only - cloud deployment deferred to Epic 3.
 
 **Key Risks:** HoYoLAB interface complexity, browser automation setup challenges, immediate anti-bot detection
 
@@ -11,9 +11,9 @@ Build reliable reward detection and claiming logic with comprehensive error hand
 **Key Risks:** CSS selector stability, reward detection accuracy, finding qualified test users
 
 ## Epic 3: **Cloud Deployment & Scheduling**
-Migrate proven local automation to GitHub Actions with secure credential management, scheduled execution, and monitoring capabilities.
+Migrate proven local automation to GitHub Actions with GitHub Secrets credential management, scheduled execution, and monitoring capabilities. Includes cloud environment validation previously planned for Epic 1.
 
-**Key Risks:** Cloud environment differences, network reliability, GitHub Actions resource limitations
+**Key Risks:** Cloud environment differences, network reliability, GitHub Actions resource limitations, credential migration complexity
 
 ## Epic 4: **Production Readiness & Documentation**
 Implement manual fallback options, comprehensive user documentation, and educational content to enable independent setup and operation.

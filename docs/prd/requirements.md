@@ -2,7 +2,7 @@
 
 ## Functional
 
-**FR1:** The system shall authenticate users to HoYoLAB using secure credential management via GitHub Secrets with proper environment variable handling and no credential exposure in logs
+**FR1:** The system shall authenticate users to HoYoLAB using a progressive credential management approach: hardcoded credentials for initial MVP validation, then migration to GitHub Secrets with proper environment variable handling and no credential exposure in logs
 
 **FR2:** The system shall navigate to the Genshin Impact daily check-in page on HoYoLAB web interface using browser automation
 
@@ -14,7 +14,7 @@
 
 **FR6:** The system shall run as a Python script using Selenium WebDriver that successfully completes the full HoYoLAB check-in process locally
 
-**FR7:** The system shall integrate with GitHub Actions for scheduled daily execution at 6 AM PHT in a cloud environment
+**FR7:** The system shall be designed for future GitHub Actions integration for scheduled daily execution at 6 AM PHT in a cloud environment, with initial Epic 1 focusing on local validation only
 
 **FR8:** The system shall provide manual trigger fallback option for critical streak maintenance during automation failures
 

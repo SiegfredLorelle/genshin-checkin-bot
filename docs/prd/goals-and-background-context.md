@@ -18,3 +18,4 @@ This project serves dual purposes - solving a gaming automation problem while pr
 | Date | Version | Description | Author |
 |------|---------|-------------|--------|
 | 2025-09-29 | v1.0 | Initial PRD creation from Project Brief with assumption testing refinements | John (PM) |
+| 2025-09-29 | v1.1 | Updated to reflect progressive credential approach and Epic 1 local validation scope | Sarah (PO) |

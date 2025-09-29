@@ -58,6 +58,29 @@ graph TB
     Manual[Manual Trigger] --> Runner
 ```
 
+## Architecture Evolution by Epic
+
+**Epic 1 Architecture (Local MVP):**
+```mermaid
+graph TB
+    Script[Python Script] --> Browser[Browser Automation]
+    Script --> HardCoded[Hardcoded Credentials]
+    Browser --> HoYoLAB[HoYoLAB Website]
+    Script --> LocalLogs[Local JSON Files]
+```
+
+**Epic 3 Architecture (Cloud Deployment):**
+```mermaid
+graph TB
+    Actions[GitHub Actions] --> Runner[Ubuntu Runner]
+    Runner --> Browser[Browser Automation]
+    Actions --> Secrets[GitHub Secrets]
+    Browser --> HoYoLAB[HoYoLAB Website]
+    Runner --> RepoStorage[Repository Storage]
+```
+
+**Migration Strategy:** Epic 1 proves automation viability with hardcoded credentials for rapid validation. Epic 3 migrates to secure cloud architecture with GitHub Secrets integration, maintaining the same core automation logic while adding enterprise-grade security and scheduling.
+
 ## Architectural Patterns
 
 - **Serverless Automation Pattern:** Stateless execution optimized for cloud environments with minimal resource usage - _Rationale:_ Perfect fit for GitHub Actions constraints and zero-cost operation

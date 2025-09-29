@@ -4,12 +4,16 @@ Based on the architectural patterns, tech stack, and data models from above, the
 
 ## AutomationOrchestrator
 
-**Responsibility:** Main entry point that coordinates the complete check-in workflow from authentication through reward collection and state logging.
+**Responsibility:** Main entry point that coordinates the complete check-in workflow from authentication through reward collection and state logging, with support for both scheduled and manual execution modes.
 
 **Key Interfaces:**
 - `execute_checkin()` - Main automation workflow execution
+- `execute_manual_trigger()` - Manual fallback execution for critical streak maintenance
 - `handle_failure(exception)` - Centralized error handling and recovery
 - `log_execution_result(result)` - State management and success tracking
+- `validate_execution_mode()` - Determine scheduled vs manual execution context
+
+**Manual Trigger Support:** Provides emergency fallback option when scheduled automation fails, accessible via GitHub Actions manual dispatch or local script execution for critical streak maintenance.
 
 **Dependencies:** BrowserManager, RewardDetector, ConfigurationManager, StateManager
 
@@ -74,7 +78,15 @@ Based on the architectural patterns, tech stack, and data models from above, the
 
 ```mermaid
 graph TB
-    Orchestrator[AutomationOrchestrator] --> Browser[BrowserManager]
+    subgraph "Execution Triggers"
+        Schedule[Scheduled Execution]
+        Manual[Manual Trigger]
+    end
+    
+    Schedule --> Orchestrator[AutomationOrchestrator]
+    Manual --> Orchestrator
+    
+    Orchestrator --> Browser[BrowserManager]
     Orchestrator --> Detector[RewardDetector]
     Orchestrator --> State[StateManager]
     
@@ -95,3 +107,18 @@ graph TB
         FileSystem
     end
 ```
+
+## Epic Evolution Component Changes
+
+**Epic 1 Components:**
+- AutomationOrchestrator (basic workflow)
+- BrowserManager (local browser)
+- RewardDetector (core CSS logic)
+- ConfigurationManager (hardcoded credentials)
+- StateManager (local file storage)
+
+**Epic 3 Component Enhancements:**
+- ConfigurationManager: GitHub Secrets integration
+- AutomationOrchestrator: Manual trigger support
+- StateManager: Repository-based storage
+- BrowserManager: Cloud environment optimization

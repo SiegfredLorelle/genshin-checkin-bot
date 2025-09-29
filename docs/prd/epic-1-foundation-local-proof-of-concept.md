@@ -23,10 +23,12 @@ so that I can develop and test the automation with consistent dependencies and p
 
 ### Acceptance Criteria
 **1:** Repository contains organized directory structure separating source code, tests, documentation, and configuration
-**2:** Python virtual environment configured with requirements.txt specifying exact versions for automation libraries
-**3:** Basic README.md provides local setup instructions for macOS and Linux development environments
-**4:** Git repository includes .gitignore excluding credentials, virtual environments, cache files, and browser artifacts
-**5:** Project includes structured logging configuration suitable for both development debugging and production operation
+**2:** Python virtual environment configured with requirements.txt specifying exact versions for automation libraries with explicit dependency conflict resolution strategy
+**3:** Browser automation framework selection criteria applied: Playwright as primary choice with Selenium WebDriver as documented fallback option, including decision matrix and switching procedures
+**4:** Basic README.md provides local setup instructions including hardcoded credential configuration for MVP testing and dependency troubleshooting guide
+**5:** Git repository includes .gitignore excluding credentials, virtual environments, cache files, and browser artifacts
+**6:** Project includes structured logging configuration suitable for both development debugging and production operation
+**7:** Dependency resolution documentation covers version conflicts, platform-specific issues, and fallback automation framework switching procedures
 
 ## Story 1.3: **Integrated Browser Automation and Research**
 
@@ -35,11 +37,13 @@ I want to implement browser automation that can navigate HoYoLAB and analyze the
 so that I can build adaptive automation based on real-time interface analysis rather than assumptions.
 
 ### Acceptance Criteria
-**1:** Browser automation successfully launches headless Chrome/Chromium and navigates to HoYoLAB login page
-**2:** Authentication flow completes using environment variables for credentials (no hardcoded secrets, careful use of personal account)
+**1:** Browser automation successfully launches headless Chrome/Chromium and navigates to HoYoLAB login page using primary framework (Playwright)
+**2:** Authentication flow completes using hardcoded credentials for initial MVP validation (personal account with careful procedures)
 **3:** Dynamic CSS selector discovery identifies multiple potential reward detection strategies with fallback options
 **4:** Script implements proper wait conditions, screenshot capture, and graceful error handling for common failures
 **5:** Automation generates detailed interface analysis report documenting discovered selectors, timing requirements, and potential bot detection measures
+**6:** Framework evaluation completes with documented decision criteria: if Playwright fails or causes issues, automatic fallback to Selenium WebDriver with documented switching procedure
+**7:** Browser automation abstraction layer implemented to support seamless switching between Playwright and Selenium without code restructuring
 
 ## Story 1.4: **Reward Detection and Claiming Workflow**
 
@@ -54,19 +58,30 @@ so that the complete check-in automation works reliably from authentication thro
 **4:** Error handling covers network timeouts, element not found, authentication failures, and unexpected UI changes
 **5:** End-to-end automation runs successfully from login through reward claiming with comprehensive logging and cleanup
 
-## Story 1.5: **Essential Local Testing and Cloud Compatibility Check**
+## Story 1.5: **Essential Local Testing and Validation**
 
 As a developer,
-I want basic testing capabilities and cloud environment validation,
-so that I can ensure local automation works correctly and will likely succeed in cloud deployment.
+I want comprehensive local testing capabilities,
+so that I can ensure the automation works correctly and is ready for future cloud deployment.
 
 ### Acceptance Criteria
 **1:** Unit tests validate core functions including CSS selector logic, credential handling, and error scenarios
 **2:** Integration test confirms complete automation workflow against live HoYoLAB interface with success/failure reporting
-**3:** Basic cloud environment compatibility check validates browser automation works in headless Ubuntu environment
-**4:** Test framework provides clear pass/fail reporting with screenshot evidence for debugging
-**5:** Cloud compatibility validation identifies any major differences between local and GitHub Actions execution environment
+**3:** Test framework provides clear pass/fail reporting with screenshot evidence for debugging
+**4:** Local validation confirms automation handles common failure scenarios (service downtime, interface changes) with appropriate logging
+**5:** Documentation includes testing procedures and validation checklist for manual verification
 
-**Refined Epic 1 Rationale:** This restructured approach validates core feasibility first before infrastructure investment, combines related research and implementation work to reduce context switching, and includes essential cloud compatibility validation to avoid Epic 3 surprises. The story sequence follows a logical progression from risk validation through working automation, with each story delivering testable value. Story sizing is optimized for AI agent execution while maintaining comprehensive acceptance criteria.
+**Refined Epic 1 Rationale:** This approach validates core feasibility first with hardcoded credentials for rapid MVP validation, combines related research and implementation work to reduce context switching, and focuses on local testing excellence. The story sequence follows a logical progression from risk validation through working automation, with each story delivering testable value. Story sizing is optimized for AI agent execution while maintaining comprehensive acceptance criteria. Cloud deployment complexity is deferred to Epic 3 for focused implementation.
 
-**Key assumption updates:** Personal account usage with careful procedures replaces test account creation, multiple detection strategies planned from start, cloud compatibility included in foundation rather than deferred, and story granularity balanced for AI agent capabilities.
+**Key assumption updates:** Hardcoded credentials for MVP validation with migration to GitHub Secrets in Epic 3, multiple detection strategies planned from start, local testing focus with cloud deployment deferred, story granularity balanced for AI agent capabilities, and explicit dependency conflict resolution strategy with Playwright-to-Selenium fallback procedures.
+
+**Dependency Resolution Strategy:** Playwright serves as the primary browser automation framework due to superior reliability and async support. Selenium WebDriver provides a documented fallback option if Playwright encounters platform-specific issues, installation problems, or functionality gaps. An abstraction layer enables seamless switching without major code restructuring, ensuring development can proceed regardless of framework-specific challenges.
+
+**Story Dependencies:** 1.1 → 1.2 → 1.3 → 1.4 → 1.5 (linear progression with each story enabling the next)
+
+**Definition of Done (applies to all stories):**
+- All acceptance criteria verified and documented
+- Code committed with descriptive commit messages
+- No blocking errors or unresolved issues
+- Documentation updated to reflect changes
+- Local testing confirms story functionality works as specified
