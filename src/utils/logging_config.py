@@ -87,9 +87,7 @@ def configure_logging(
     # Configure structlog
     structlog.configure(
         processors=processors,
-        wrapper_class=structlog.make_filtering_bound_logger(
-            getattr(logging, log_level.upper())
-        ),
+        wrapper_class=structlog.make_filtering_bound_logger(getattr(logging, log_level.upper())),
         logger_factory=structlog.WriteLoggerFactory(),
         cache_logger_on_first_use=True,
     )

@@ -37,21 +37,20 @@ class SelectorStrategy(ABC):
         """
         pass
 
-    async def analyze_reward_states(
-        self, browser: BrowserManagerInterface
-    ) -> Dict[str, Any]:
-        """Analyze reward states (optional implementation).
+    async def analyze_reward_states(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+        """Analyze reward states with enhanced differentiation logic.
 
         Args:
             browser: Browser implementation instance
 
         Returns:
-            Reward state analysis results
+            Reward state analysis results with detailed classification
         """
         return {
             "claimable_rewards": [],
             "claimed_rewards": [],
             "unavailable_rewards": [],
+            "detection_confidence": 0.5,
         }
 
     async def get_selector_for_target(
@@ -123,9 +122,7 @@ class HoYoLABClassBasedStrategy(SelectorStrategy):
                             found_any = True
 
                     except Exception as e:
-                        logger.debug(
-                            "Selector test failed", selector=selector, error=str(e)
-                        )
+                        logger.debug("Selector test failed", selector=selector, error=str(e))
                         continue
 
             # Adjust confidence based on findings
@@ -145,6 +142,82 @@ class HoYoLABClassBasedStrategy(SelectorStrategy):
             result["confidence"] = 0.0
 
         return result
+
+    async def analyze_reward_states(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+        """Enhanced reward state analysis using HoYoLAB-specific patterns."""
+        states = {
+            "claimable_rewards": [],
+            "claimed_rewards": [],
+            "unavailable_rewards": [],
+            "detection_confidence": 0.8,
+        }
+
+        try:
+            # Look for claimable rewards using multiple selector patterns
+            claimable_selectors = [
+                ".reward-item:not(.claimed):not(.disabled)",
+                ".daily-reward.available",
+                ".signin-reward.claimable",
+                "[data-state='available']",
+            ]
+
+            for selector in claimable_selectors:
+                try:
+                    found = await browser.find_element(selector, timeout=2000)
+                    if found:
+                        states["claimable_rewards"].append(
+                            {"selector": selector, "state": "claimable", "confidence": 0.9}
+                        )
+                except Exception:
+                    continue
+
+            # Look for claimed rewards
+            claimed_selectors = [
+                ".reward-item.claimed",
+                ".daily-reward.completed",
+                ".signin-reward.received",
+                "[data-state='claimed']",
+            ]
+
+            for selector in claimed_selectors:
+                try:
+                    found = await browser.find_element(selector, timeout=2000)
+                    if found:
+                        states["claimed_rewards"].append(
+                            {"selector": selector, "state": "claimed", "confidence": 0.9}
+                        )
+                except Exception:
+                    continue
+
+            # Look for unavailable rewards
+            unavailable_selectors = [
+                ".reward-item.disabled",
+                ".daily-reward.locked",
+                ".signin-reward.unavailable",
+                "[data-state='locked']",
+            ]
+
+            for selector in unavailable_selectors:
+                try:
+                    found = await browser.find_element(selector, timeout=2000)
+                    if found:
+                        states["unavailable_rewards"].append(
+                            {"selector": selector, "state": "unavailable", "confidence": 0.8}
+                        )
+                except Exception:
+                    continue
+
+            logger.info(
+                "HoYoLAB reward state analysis completed",
+                claimable=len(states["claimable_rewards"]),
+                claimed=len(states["claimed_rewards"]),
+            )
+
+        except Exception as e:
+            logger.error("HoYoLAB reward state analysis failed", error=str(e))
+            states["detection_confidence"] = 0.2
+
+        return states
 
     async def get_selector_for_target(
         self, browser: BrowserManagerInterface, target_type: str
@@ -271,9 +344,7 @@ class TextContentStrategy(SelectorStrategy):
 
             logger.info(
                 "Text content detection completed",
-                patterns_tested=sum(
-                    len(patterns) for patterns in self.text_patterns.values()
-                ),
+                patterns_tested=sum(len(patterns) for patterns in self.text_patterns.values()),
             )
 
         except Exception as e:

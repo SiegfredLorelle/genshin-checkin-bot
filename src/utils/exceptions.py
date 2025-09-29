@@ -47,3 +47,27 @@ class StateManagementError(AutomationError):
     """State management operation failure."""
 
     pass
+
+
+class ClaimingError(AutomationError):
+    """Reward claiming operation failure."""
+
+    pass
+
+
+class NetworkTimeoutError(AutomationError):
+    """Network timeout during automation operation."""
+
+    pass
+
+
+class ElementNotFoundError(DetectionError):
+    """Required UI element not found during automation."""
+
+    pass
+
+
+class UIChangeError(AutomationError):
+    """Unexpected UI change detected during operation."""
+
+    pass

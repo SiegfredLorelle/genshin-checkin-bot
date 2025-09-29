@@ -113,18 +113,14 @@ class ConfigurationManager:
         return {
             "wait_timeout": config("DETECTION_WAIT_TIMEOUT", default=10000, cast=int),
             "retry_attempts": config("DETECTION_RETRY_ATTEMPTS", default=3, cast=int),
-            "screenshot_on_failure": config(
-                "DETECTION_SCREENSHOT", default=True, cast=bool
-            ),
+            "screenshot_on_failure": config("DETECTION_SCREENSHOT", default=True, cast=bool),
             "primary_selectors": [
                 config("DETECTION_PRIMARY_SELECTOR", default=".signin-btn"),
                 config(
                     "DETECTION_FALLBACK_SELECTOR",
                     default="[data-testid='signin-button']",
                 ),
-                config(
-                    "DETECTION_GENERIC_SELECTOR", default="button:contains('Sign in')"
-                ),
+                config("DETECTION_GENERIC_SELECTOR", default="button:contains('Sign in')"),
             ],
         }
 

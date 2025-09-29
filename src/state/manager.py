@@ -38,9 +38,7 @@ class StateManager:
             # Create history file if it doesn't exist
             if not self.history_file.exists():
                 self.history_file.touch()
-                logger.info(
-                    "Created execution history file", path=str(self.history_file)
-                )
+                logger.info("Created execution history file", path=str(self.history_file))
 
             logger.info("State manager initialized successfully")
 
@@ -83,9 +81,7 @@ class StateManager:
             except Exception as e:
                 raise StateManagementError(f"Failed to log execution result: {e}")
 
-    async def get_execution_history(
-        self, limit: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    async def get_execution_history(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get execution history from log file.
 
         Args:
@@ -153,18 +149,14 @@ class StateManager:
             filtered_history = []
             for record in history:
                 try:
-                    record_date = datetime.fromisoformat(
-                        record["timestamp"].replace("Z", "+00:00")
-                    )
+                    record_date = datetime.fromisoformat(record["timestamp"].replace("Z", "+00:00"))
                     if record_date >= cutoff_date:
                         filtered_history.append(record)
                 except (KeyError, ValueError):
                     continue
 
             total = len(filtered_history)
-            successful = sum(
-                1 for record in filtered_history if record.get("success", False)
-            )
+            successful = sum(1 for record in filtered_history if record.get("success", False))
 
             success_rate = (successful / total * 100) if total > 0 else 0.0
 
@@ -225,9 +217,7 @@ class StateManager:
 
                 # Rewrite file with filtered history
                 with open(self.history_file, "w", encoding="utf-8") as f:
-                    for record in reversed(
-                        filtered_history
-                    ):  # Maintain chronological order
+                    for record in reversed(filtered_history):  # Maintain chronological order
                         f.write(json.dumps(record) + "\n")
 
                 removed_count = len(history) - len(filtered_history)

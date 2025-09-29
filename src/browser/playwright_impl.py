@@ -133,9 +133,7 @@ class PlaywrightBrowserManager(BrowserManagerInterface):
             raise RuntimeError("Browser not initialized")
 
         try:
-            await self.page.wait_for_selector(
-                selector, timeout=timeout, state="visible"
-            )
+            await self.page.wait_for_selector(selector, timeout=timeout, state="visible")
             return True
         except Exception:
             return False

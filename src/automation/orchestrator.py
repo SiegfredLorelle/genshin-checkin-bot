@@ -60,6 +60,142 @@ class AutomationOrchestrator:
             await self.cleanup()
             raise AutomationError(f"Orchestrator initialization failed: {e}")
 
+    async def execute_checkin(self, dry_run: bool = False) -> Dict[str, Any]:
+        """Execute complete check-in workflow from authentication through
+        reward claiming.
+
+        Args:
+            dry_run: If True, perform analysis without actual claiming
+
+        Returns:
+            Complete workflow execution results including claiming status
+
+        Raises:
+            AutomationError: If workflow execution fails
+        """
+        workflow_result = {
+            "success": False,
+            "workflow_completed": False,
+            "step_completed": None,
+            "authentication_success": False,
+            "interface_analysis": {},
+            "reward_detection": {},
+            "claiming_results": {},
+            "validation_results": {},
+            "screenshots": [],
+            "errors": [],
+            "dry_run": dry_run,
+            "cleanup_completed": False,
+        }
+
+        try:
+            logger.info("Starting complete check-in workflow", dry_run=dry_run)
+
+            # Step 1: Navigate to HoYoLAB
+            await self._navigate_to_hoyolab()
+            workflow_result["step_completed"] = "navigation"
+
+            # Step 2: Authenticate
+            auth_result = await self._authenticate()
+            workflow_result["authentication_success"] = auth_result
+            workflow_result["step_completed"] = "authentication"
+
+            if not auth_result:
+                raise AuthenticationError("Authentication failed")
+
+            # Step 3: Detect reward availability
+            detection_result = await self.reward_detector.detect_reward_availability(
+                self.browser_impl
+            )
+            workflow_result["reward_detection"] = detection_result
+            workflow_result["step_completed"] = "reward_detection"
+
+            logger.info(
+                "Reward detection completed",
+                claimable_count=len(detection_result.get("claimable_rewards", [])),
+                confidence=detection_result.get("detection_confidence", 0.0),
+            )
+
+            # Step 4: Claim rewards (skip if dry_run)
+            if not dry_run and detection_result.get("claimable_rewards"):
+                # Store state for validation
+                pre_claim_state = detection_result.copy()
+
+                claiming_result = await self.reward_detector.claim_available_rewards(
+                    self.browser_impl, detection_result
+                )
+                workflow_result["claiming_results"] = claiming_result
+                workflow_result["step_completed"] = "reward_claiming"
+
+                # Step 5: Validate claim success
+                if claiming_result.get("success"):
+                    validation_result = await self.reward_detector.validate_claim_success(
+                        self.browser_impl, pre_claim_state
+                    )
+                    workflow_result["validation_results"] = validation_result
+                    workflow_result["step_completed"] = "claim_validation"
+
+            elif dry_run:
+                logger.info("Dry run mode: skipping reward claiming")
+                workflow_result["claiming_results"] = {"dry_run": True, "success": True}
+                workflow_result["validation_results"] = {"dry_run": True}
+                workflow_result["step_completed"] = "dry_run_complete"
+
+            else:
+                logger.info("No claimable rewards found")
+                workflow_result["claiming_results"] = {"no_rewards": True, "success": True}
+                workflow_result["step_completed"] = "no_rewards_to_claim"
+
+            # Step 6: Log execution results
+            await self._log_execution_result(workflow_result)
+
+            # Mark workflow as completed
+            workflow_result["success"] = True
+            workflow_result["workflow_completed"] = True
+            logger.info("Complete check-in workflow finished successfully")
+
+            return workflow_result
+
+        except Exception as e:
+            # Enhanced error handling
+            error_context = {
+                "step": workflow_result["step_completed"],
+                "dry_run": dry_run,
+                "browser_active": self.browser_impl is not None,
+            }
+
+            error_handling_result = await self._handle_workflow_error(e, error_context)
+            workflow_result["error_handling"] = error_handling_result
+            workflow_result["errors"].append(str(e))
+
+            # Capture debug screenshot
+            screenshot_path = await self._capture_debug_screenshot("checkin_workflow_error")
+            if screenshot_path:
+                workflow_result["screenshots"].append(screenshot_path)
+
+            # Log failure with comprehensive context
+            await self._log_execution_result(workflow_result)
+
+            logger.error(
+                "Check-in workflow failed",
+                step=workflow_result["step_completed"],
+                error=str(e),
+                retry_recommended=error_handling_result.get("retry_recommended", False),
+            )
+
+            raise AutomationError(
+                f"Check-in workflow failed at {workflow_result['step_completed']}: {e}"
+            )
+
+        finally:
+            # Ensure cleanup always happens
+            try:
+                await self.cleanup()
+                workflow_result["cleanup_completed"] = True
+            except Exception as cleanup_error:
+                logger.error("Cleanup failed", error=str(cleanup_error))
+                workflow_result["cleanup_completed"] = False
+
     async def execute_workflow(self) -> Dict[str, Any]:
         """Execute complete automation workflow.
 
@@ -140,6 +276,114 @@ class AutomationOrchestrator:
             raise AutomationError(
                 f"Workflow failed at {workflow_result['step_completed']}: {error_msg}"
             )
+
+    async def _handle_workflow_error(
+        self, error: Exception, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Handle workflow errors with context-aware recovery strategies.
+
+        Args:
+            error: Exception that occurred
+            context: Error context information
+
+        Returns:
+            Error handling result with recovery recommendations
+        """
+        error_handling_result = {
+            "error_type": type(error).__name__,
+            "error_message": str(error),
+            "recovery_attempted": False,
+            "retry_recommended": False,
+            "context_preserved": True,
+        }
+
+        try:
+            # Use RewardDetector's enhanced error handling if available
+            if hasattr(self.reward_detector, "handle_claiming_errors"):
+                detector_handling = await self.reward_detector.handle_claiming_errors(
+                    self.browser_impl, error, context
+                )
+                error_handling_result.update(detector_handling)
+            else:
+                # Basic error handling
+                if "timeout" in str(error).lower():
+                    error_handling_result["retry_recommended"] = True
+                elif "auth" in str(error).lower():
+                    # Need re-auth
+                    error_handling_result["retry_recommended"] = False
+                else:
+                    error_handling_result["retry_recommended"] = True
+
+            logger.info(
+                "Workflow error handled",
+                error_type=error_handling_result["error_type"],
+                retry_recommended=error_handling_result["retry_recommended"],
+            )
+
+        except Exception as handling_error:
+            logger.error("Error handling failed", error=str(handling_error))
+            error_handling_result["error_message"] += f" | Handling failed: {handling_error}"
+
+        return error_handling_result
+
+    async def _log_execution_result(self, workflow_result: Dict[str, Any]) -> None:
+        """Log comprehensive execution results to state manager.
+
+        Args:
+            workflow_result: Complete workflow execution results
+        """
+        try:
+            execution_record = {
+                "timestamp": self.state_manager.get_current_timestamp(),
+                "success": workflow_result.get("success", False),
+                "workflow_completed": workflow_result.get("workflow_completed", False),
+                "step_completed": workflow_result.get("step_completed"),
+                "reward_detection": {
+                    "total_rewards": len(
+                        workflow_result.get("reward_detection", {}).get("claimable_rewards", [])
+                    ),
+                    "detection_confidence": (
+                        workflow_result.get("reward_detection", {}).get("detection_confidence", 0.0)
+                    ),
+                },
+                "claiming_results": {
+                    "claims_processed": (
+                        workflow_result.get("claiming_results", {}).get("claims_processed", 0)
+                    ),
+                    "claiming_success": (
+                        workflow_result.get("claiming_results", {}).get("success", False)
+                    ),
+                },
+                "validation_results": {
+                    "claim_validated": (
+                        workflow_result.get("validation_results", {}).get("claim_validated", False)
+                    ),
+                    "validation_confidence": (
+                        workflow_result.get("validation_results", {}).get(
+                            "validation_confidence", 0.0
+                        )
+                    ),
+                },
+                "error_count": len(workflow_result.get("errors", [])),
+                "screenshots_captured": len(workflow_result.get("screenshots", [])),
+                "cleanup_completed": workflow_result.get("cleanup_completed", False),
+            }
+
+            # Add error details if present (without sensitive info)
+            if workflow_result.get("errors"):
+                # Limit to first 3 errors
+                execution_record["error_summary"] = workflow_result["errors"][:3]
+
+            await self.state_manager.log_execution_result(execution_record)
+
+            logger.info(
+                "Execution result logged",
+                success=execution_record["success"],
+                claims_processed=(execution_record["claiming_results"]["claims_processed"]),
+            )
+
+        except Exception as e:
+            logger.error("Failed to log execution result", error=str(e))
 
     async def _navigate_to_hoyolab(self) -> None:
         """Navigate to HoYoLAB login page."""
@@ -241,9 +485,7 @@ class AutomationOrchestrator:
             await self.browser_impl.set_cookie(cookie)
 
         except Exception as e:
-            logger.error(
-                "Failed to set cookie", cookie_name=cookie.get("name"), error=str(e)
-            )
+            logger.error("Failed to set cookie", cookie_name=cookie.get("name"), error=str(e))
             raise
 
     async def _validate_authentication(self) -> bool:
@@ -280,9 +522,7 @@ class AutomationOrchestrator:
             logger.info("Starting interface analysis")
 
             # Perform comprehensive interface analysis
-            analysis_result = await self.reward_detector.analyze_interface(
-                self.browser_impl
-            )
+            analysis_result = await self.reward_detector.analyze_interface(self.browser_impl)
 
             # Generate detailed interface report
             report = await self._generate_interface_report(analysis_result)
@@ -304,9 +544,7 @@ class AutomationOrchestrator:
             logger.error("Interface analysis failed", error=str(e))
             return {"error": str(e), "selectors": [], "detection_confidence": 0.0}
 
-    async def _generate_interface_report(
-        self, analysis_result: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _generate_interface_report(self, analysis_result: Dict[str, Any]) -> Dict[str, Any]:
         """Generate detailed interface analysis report.
 
         Args:
@@ -357,13 +595,9 @@ class AutomationOrchestrator:
                 }
 
                 if confidence >= 0.8:
-                    report["selector_inventory"]["high_confidence"].append(
-                        selector_info
-                    )
+                    report["selector_inventory"]["high_confidence"].append(selector_info)
                 elif confidence >= 0.5:
-                    report["selector_inventory"]["medium_confidence"].append(
-                        selector_info
-                    )
+                    report["selector_inventory"]["medium_confidence"].append(selector_info)
                 else:
                     report["selector_inventory"]["low_confidence"].append(selector_info)
 
@@ -373,9 +607,7 @@ class AutomationOrchestrator:
 
             if total_selectors > 0:
                 stability_score = (high_conf_count / total_selectors) * 100
-                report["reliability_assessment"]["stability_score"] = round(
-                    stability_score, 2
-                )
+                report["reliability_assessment"]["stability_score"] = round(stability_score, 2)
 
             # Add monitoring recommendations
             if stability_score < 50:
