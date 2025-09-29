@@ -20,12 +20,13 @@ This project serves dual purposes - solving a gaming automation problem while pr
 | Date | Version | Description | Author |
 |------|---------|-------------|--------|
 | 2025-09-29 | v1.0 | Initial PRD creation from Project Brief with assumption testing refinements | John (PM) |
+| 2025-09-29 | v1.1 | Updated to reflect progressive credential approach and Epic 1 local validation scope | Sarah (PO) |
 
 ## Requirements
 
 ### Functional
 
-**FR1:** The system shall authenticate users to HoYoLAB using secure credential management via GitHub Secrets with proper environment variable handling and no credential exposure in logs
+**FR1:** The system shall authenticate users to HoYoLAB using a progressive credential management approach: hardcoded credentials for initial MVP validation, then migration to GitHub Secrets with proper environment variable handling and no credential exposure in logs
 
 **FR2:** The system shall navigate to the Genshin Impact daily check-in page on HoYoLAB web interface using browser automation
 
@@ -37,7 +38,7 @@ This project serves dual purposes - solving a gaming automation problem while pr
 
 **FR6:** The system shall run as a Python script using Selenium WebDriver that successfully completes the full HoYoLAB check-in process locally
 
-**FR7:** The system shall integrate with GitHub Actions for scheduled daily execution at 6 AM PHT in a cloud environment
+**FR7:** The system shall be designed for future GitHub Actions integration for scheduled daily execution at 6 AM PHT in a cloud environment, with initial Epic 1 focusing on local validation only
 
 **FR8:** The system shall provide manual trigger fallback option for critical streak maintenance during automation failures
 
@@ -100,7 +101,7 @@ Single repository containing all automation scripts, workflows, documentation, a
 ## Epic List
 
 ### Epic 1: **Foundation & Local Proof of Concept**
-Establish project infrastructure, local development environment, and demonstrate core automation feasibility through successful local HoYoLAB check-in execution.
+Establish project infrastructure, local development environment, and demonstrate core automation feasibility through successful local HoYoLAB check-in execution using hardcoded credentials. Focus on local validation only - cloud deployment deferred to Epic 3.
 
 **Key Risks:** HoYoLAB interface complexity, browser automation setup challenges, immediate anti-bot detection
 
@@ -110,9 +111,9 @@ Build reliable reward detection and claiming logic with comprehensive error hand
 **Key Risks:** CSS selector stability, reward detection accuracy, finding qualified test users
 
 ### Epic 3: **Cloud Deployment & Scheduling**
-Migrate proven local automation to GitHub Actions with secure credential management, scheduled execution, and monitoring capabilities.
+Migrate proven local automation to GitHub Actions with GitHub Secrets credential management, scheduled execution, and monitoring capabilities. Includes cloud environment validation previously planned for Epic 1.
 
-**Key Risks:** Cloud environment differences, network reliability, GitHub Actions resource limitations
+**Key Risks:** Cloud environment differences, network reliability, GitHub Actions resource limitations, credential migration complexity
 
 ### Epic 4: **Production Readiness & Documentation**
 Implement manual fallback options, comprehensive user documentation, and educational content to enable independent setup and operation.
@@ -157,7 +158,7 @@ so that I can develop and test the automation with consistent dependencies and p
 #### Acceptance Criteria
 **1:** Repository contains organized directory structure separating source code, tests, documentation, and configuration
 **2:** Python virtual environment configured with requirements.txt specifying exact versions for automation libraries
-**3:** Basic README.md provides local setup instructions for macOS and Linux development environments
+**3:** Basic README.md provides local setup instructions including hardcoded credential configuration for MVP testing
 **4:** Git repository includes .gitignore excluding credentials, virtual environments, cache files, and browser artifacts
 **5:** Project includes structured logging configuration suitable for both development debugging and production operation
 
@@ -169,7 +170,7 @@ so that I can build adaptive automation based on real-time interface analysis ra
 
 #### Acceptance Criteria
 **1:** Browser automation successfully launches headless Chrome/Chromium and navigates to HoYoLAB login page
-**2:** Authentication flow completes using environment variables for credentials (no hardcoded secrets, careful use of personal account)
+**2:** Authentication flow completes using hardcoded credentials for initial MVP validation (personal account with careful procedures)
 **3:** Dynamic CSS selector discovery identifies multiple potential reward detection strategies with fallback options
 **4:** Script implements proper wait conditions, screenshot capture, and graceful error handling for common failures
 **5:** Automation generates detailed interface analysis report documenting discovered selectors, timing requirements, and potential bot detection measures
@@ -187,22 +188,22 @@ so that the complete check-in automation works reliably from authentication thro
 **4:** Error handling covers network timeouts, element not found, authentication failures, and unexpected UI changes
 **5:** End-to-end automation runs successfully from login through reward claiming with comprehensive logging and cleanup
 
-### Story 1.5: **Essential Local Testing and Cloud Compatibility Check**
+### Story 1.5: **Essential Local Testing and Validation**
 
 As a developer,
-I want basic testing capabilities and cloud environment validation,
-so that I can ensure local automation works correctly and will likely succeed in cloud deployment.
+I want comprehensive local testing capabilities,
+so that I can ensure the automation works correctly and is ready for future cloud deployment.
 
 #### Acceptance Criteria
 **1:** Unit tests validate core functions including CSS selector logic, credential handling, and error scenarios
 **2:** Integration test confirms complete automation workflow against live HoYoLAB interface with success/failure reporting
-**3:** Basic cloud environment compatibility check validates browser automation works in headless Ubuntu environment
-**4:** Test framework provides clear pass/fail reporting with screenshot evidence for debugging
-**5:** Cloud compatibility validation identifies any major differences between local and GitHub Actions execution environment
+**3:** Test framework provides clear pass/fail reporting with screenshot evidence for debugging
+**4:** Local validation confirms automation handles common failure scenarios (service downtime, interface changes) with appropriate logging
+**5:** Documentation includes testing procedures and validation checklist for manual verification
 
-**Refined Epic 1 Rationale:** This restructured approach validates core feasibility first before infrastructure investment, combines related research and implementation work to reduce context switching, and includes essential cloud compatibility validation to avoid Epic 3 surprises. The story sequence follows a logical progression from risk validation through working automation, with each story delivering testable value. Story sizing is optimized for AI agent execution while maintaining comprehensive acceptance criteria.
+**Refined Epic 1 Rationale:** This approach validates core feasibility first with hardcoded credentials for rapid MVP validation, combines related research and implementation work to reduce context switching, and focuses on local testing excellence. The story sequence follows a logical progression from risk validation through working automation, with each story delivering testable value. Story sizing is optimized for AI agent execution while maintaining comprehensive acceptance criteria. Cloud deployment complexity is deferred to Epic 3 for focused implementation.
 
-**Key assumption updates:** Personal account usage with careful procedures replaces test account creation, multiple detection strategies planned from start, cloud compatibility included in foundation rather than deferred, and story granularity balanced for AI agent capabilities.
+**Key assumption updates:** Hardcoded credentials for MVP validation with migration to GitHub Secrets in Epic 3, multiple detection strategies planned from start, local testing focus with cloud deployment deferred, and story granularity balanced for AI agent capabilities.
 
 ## Epic 2 Core Automation Engine
 
