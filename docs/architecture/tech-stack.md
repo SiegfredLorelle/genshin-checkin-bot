@@ -1,0 +1,28 @@
+# Tech Stack
+
+This is the DEFINITIVE technology selection for the entire project. All development must use these exact versions.
+
+| Category | Technology | Version | Purpose | Rationale |
+|----------|------------|---------|---------|-----------|
+| Backend Language | Python | 3.9+ | Core automation logic and browser control | Mature ecosystem for web automation, excellent library support, readable for educational goals |
+| Browser Automation | Playwright | ^1.40.0 | Primary web automation framework | Superior reliability vs Selenium, better async support, built-in waiting strategies, excellent debugging tools |
+| Browser Automation (Fallback) | Selenium WebDriver | ^4.15.0 | Backup automation option | Widely documented, fallback if Playwright issues, industry standard for learning |
+| Browser Engine | Chromium | Latest (via Playwright) | Headless browser execution | Consistent rendering, good GitHub Actions support, reliable automation target |
+| HTTP Client | httpx | ^0.25.0 | API requests and session management | Async support, better than requests for automation, HTTP/2 support |
+| Configuration Management | python-decouple | ^3.8 | Environment variable handling | Secure config management, no hardcoded secrets, type conversion support |
+| Logging Framework | structlog | ^23.1.0 | Structured logging with context | JSON logging, excellent debugging, GitHub Actions compatibility |
+| State Management | JSON (stdlib) | Built-in | Execution history and success tracking | Simple, readable, no external dependencies, GitHub-friendly storage |
+| Testing Framework | pytest | ^7.4.0 | Unit and integration testing | Industry standard, excellent fixture support, parametrization capabilities |
+| Browser Testing | pytest-playwright | ^0.4.0 | Browser automation testing | Seamless Playwright integration, async test support |
+| Assertion Library | pytest (built-in) | ^7.4.0 | Test assertions and validation | Comprehensive assertion methods, clear error messages |
+| Mocking Framework | pytest-mock | ^3.11.0 | Test isolation and mocking | Clean mock syntax, pytest integration, reduces external dependencies |
+| Code Formatting | black | ^23.7.0 | Consistent code style | Opinionated formatting, educational readability, industry adoption |
+| Import Sorting | isort | ^5.12.0 | Import organization | Clean import structure, black compatibility |
+| Linting | flake8 | ^6.0.0 | Code quality enforcement | Catches common errors, educational best practices |
+| Type Checking | mypy | ^1.5.0 | Static type analysis | Type safety, better IDE support, documentation through types |
+| Dependency Management | pip + requirements.txt | Latest | Package management | Simple, GitHub Actions native, exact version control |
+| CI/CD Platform | GitHub Actions | N/A | Automation scheduling and execution | Zero-cost, integrated secrets, Ubuntu environment, cron scheduling |
+| Secret Management | GitHub Secrets | N/A | Secure credential storage | Built-in encryption, environment variable injection, audit logging |
+| Documentation | Markdown + GitHub Pages | N/A | Project documentation and guides | GitHub integration, zero-cost hosting, version control |
+| Container Runtime | Docker (optional) | ^24.0.0 | Local development consistency | Optional for environment consistency, GitHub Actions has native support |
+| Notification System | GitHub Actions Status | N/A | Success/failure alerting | Built-in workflow notifications, email integration available |
