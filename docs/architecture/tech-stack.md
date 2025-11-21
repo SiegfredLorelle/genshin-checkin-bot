@@ -20,8 +20,9 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 | Import Sorting | isort | ^5.12.0 | Import organization | Clean import structure, black compatibility |
 | Linting | flake8 | ^6.0.0 | Code quality enforcement | Catches common errors, educational best practices |
 | Type Checking | mypy | ^1.5.0 | Static type analysis | Type safety, better IDE support, documentation through types |
-| Dependency Management | pip + requirements.txt | Latest | Package management | Simple, GitHub Actions native, exact version control |
-| CI/CD Platform | GitHub Actions | N/A | Automation scheduling and execution | Zero-cost, integrated secrets, Ubuntu environment, cron scheduling |
+| Package Manager | uv | Latest | Fast Python package and project manager | 10-100x faster than pip, built in Rust, modern tooling, lock files for reproducibility |
+| Dependency Management | pyproject.toml + uv.lock | PEP 621 | Dependency specification and locking | Modern Python standard, single source of truth, exact reproducibility across environments |
+| CI/CD Platform | GitHub Actions | N/A | Automation scheduling and execution | Zero-cost, integrated secrets, Ubuntu environment, cron scheduling, uv native support |
 | Secret Management | GitHub Secrets | N/A | Secure credential storage | Built-in encryption, environment variable injection, audit logging |
 | Documentation | Markdown + GitHub Pages | N/A | Project documentation and guides | GitHub integration, zero-cost hosting, version control |
 | Container Runtime | Docker (optional) | ^24.0.0 | Local development consistency | Optional for environment consistency, GitHub Actions has native support |

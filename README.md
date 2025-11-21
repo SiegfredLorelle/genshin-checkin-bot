@@ -1,6 +1,12 @@
 # Genshin Impact HoYoLAB Check-in Bot
 
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 An automated browser-based solution for daily HoYoLAB check-ins with robust error handling and multi-framework support.
+
+> **⚠️ Important**: This project uses [`uv`](https://docs.astral.sh/uv/) for dependency management. Traditional pip/venv workflows are not supported. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup instructions.
 
 ## Features
 
@@ -12,6 +18,7 @@ An automated browser-based solution for daily HoYoLAB check-ins with robust erro
 ## Prerequisites
 
 - **Python 3.9+** (Check with `python3 --version`)
+- **uv** - Modern Python package manager ([Install Guide](https://docs.astral.sh/uv/getting-started/installation/))
 - **Git** for repository management
 - **Chrome/Chromium browser** (automatically managed by Playwright)
 
@@ -24,15 +31,15 @@ An automated browser-based solution for daily HoYoLAB check-ins with robust erro
 git clone https://github.com/SiegfredLorelle/genshin-checkin-bot.git
 cd genshin-checkin-bot
 
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Install uv (fast Python package manager) if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
+# or: pip install uv
 
-# Install dependencies
-pip install -r requirements.txt
+# Create virtual environment and install all dependencies (one command!)
+uv sync
 
 # Install Playwright browsers (primary framework)
-playwright install chromium
+uv run playwright install chromium
 ```
 
 ### 2. Configure Credentials
@@ -49,13 +56,13 @@ cp .env.example .env
 
 ```bash
 # Run dependency verification
-python scripts/verify_dependencies.py
+uv run python scripts/verify_dependencies.py
 
 # Run unit tests
-pytest tests/unit/
+uv run pytest tests/unit/
 
 # Test browser automation (dry run)
-python -m src.automation.orchestrator --dry-run
+uv run python -m src.automation.orchestrator --dry-run
 ```
 
 ## Credential Configuration
@@ -93,19 +100,24 @@ BROWSER_FRAMEWORK=playwright  # or "selenium"
 
 ```bash
 # Code Quality
-black src/ tests/              # Format code
-isort src/ tests/              # Sort imports  
-flake8 src/ tests/             # Lint code
-mypy src/                      # Type checking
+uv run black src/ tests/              # Format code
+uv run isort src/ tests/              # Sort imports  
+uv run flake8 src/ tests/             # Lint code
+uv run mypy src/                      # Type checking
 
 # Testing
-pytest tests/unit/             # Unit tests only
-pytest tests/integration/      # Integration tests only
-pytest tests/ --cov=src        # All tests with coverage
+uv run pytest tests/unit/             # Unit tests only
+uv run pytest tests/integration/      # Integration tests only
+uv run pytest tests/ --cov=src        # All tests with coverage
 
 # Local Testing
-python -m src.automation.orchestrator          # Full execution
-python -m src.automation.orchestrator --dry-run # Test without actions
+uv run python -m src.automation.orchestrator          # Full execution
+uv run python -m src.automation.orchestrator --dry-run # Test without actions
+
+# Dependency Management
+uv add package-name                   # Add new package
+uv add --dev package-name             # Add dev dependency
+uv lock --upgrade                     # Update lock file
 ```
 
 ## Browser Framework Selection
@@ -164,11 +176,15 @@ echo "BROWSER_FRAMEWORK=selenium" >> .env
 
 **Import Errors:**
 ```bash
-# Verify virtual environment is activated
-which python  # Should point to venv/bin/python
+# Verify uv environment
+uv run python --version  # Should show correct Python version
 
 # Reinstall dependencies
-pip install -r requirements.txt --force-reinstall
+uv sync --reinstall
+
+# Clear cache and reinstall
+rm -rf .venv/
+uv sync
 ```
 
 **Permission Issues (macOS/Linux):**
@@ -196,11 +212,13 @@ chmod +x venv/bin/playwright
 
 **Version Conflicts:**
 ```bash
-# Clean install
-rm -rf venv/
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+# Clean install with uv
+rm -rf .venv/
+uv sync --reinstall
+
+# Update lock file and reinstall
+uv lock --upgrade
+uv sync
 ```
 
 **Platform-Specific Issues:**

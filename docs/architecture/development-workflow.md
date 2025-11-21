@@ -9,9 +9,15 @@ The development setup and workflow supports both local development and cloud dep
 # Install Python 3.9+
 python3 --version
 
-# Install pip and venv
-python3 -m pip install --upgrade pip
-python3 -m venv --help
+# Install uv (fast Python package manager)
+# macOS/Linux:
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows:
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Or via pip:
+pip install uv
 
 # Install Playwright browser dependencies (if using Playwright)
 npx playwright install-deps
@@ -23,43 +29,63 @@ npx playwright install-deps
 git clone https://github.com/SiegfredLorelle/genshin-checkin-bot.git
 cd genshin-checkin-bot
 
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Create virtual environment and install dependencies (one command!)
+uv sync
 
-# Install dependencies
-pip install -r requirements.txt
+# Alternative: Install specific dependency groups
+uv sync --extra dev --extra test
 
 # Install Playwright browsers (if using Playwright)
-playwright install chromium
+uv run playwright install chromium
 
 # Copy environment template
 cp .env.example .env
 # Edit .env with your HoYoLAB credentials (see SECURITY.md for safe practices)
 ```
 
+**Why uv?**
+- ⚡ 10-100x faster than pip
+- 🔒 Automatic lock file (`uv.lock`) for reproducible installs
+- 🛠️ Single tool for venv + package management
+- 📦 Modern Python standards (PEP 621)
+- 🚀 Built in Rust for reliability and speed
+
+**Note**: This project uses **uv exclusively**. Traditional pip/venv workflows are not supported.
+
 **Development Commands:**
 ```bash
 # Start local automation test
-python -m src.automation.orchestrator --dry-run
+uv run python -m src.automation.orchestrator --dry-run
 
 # Run specific test suites  
-pytest tests/unit/                    # Unit tests only
-pytest tests/integration/             # Integration tests only
-pytest tests/                        # All tests
+uv run pytest tests/unit/                    # Unit tests only
+uv run pytest tests/integration/             # Integration tests only
+uv run pytest tests/                        # All tests
 
 # Run with coverage
-pytest --cov=src tests/
+uv run pytest --cov=src tests/
 
 # Format code
-black src/ tests/
-isort src/ tests/
+uv run black src/ tests/
+uv run isort src/ tests/
 
 # Type checking
-mypy src/
+uv run mypy src/
 
 # Lint code
-flake8 src/ tests/
+uv run flake8 src/ tests/
+
+# Add new dependency
+uv add package-name
+
+# Add development dependency
+uv add --dev package-name
+
+# Update dependencies
+uv lock --upgrade
+
+# Show dependency tree
+uv tree
 ```
 
 ## Environment Configuration
