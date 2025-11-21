@@ -87,13 +87,15 @@ class BrowserManagerInterface(ABC):
 class BrowserManager:
     """Main browser manager with framework selection logic."""
 
-    def __init__(self, framework: str = "playwright"):
+    def __init__(self, framework: str = "playwright", headless: bool = True):
         """Initialize with specified framework.
 
         Args:
             framework: "playwright" (default) or "selenium"
+            headless: Whether to run browser in headless mode
         """
         self.framework = framework
+        self.headless = headless
         self._browser_impl: Optional[BrowserManagerInterface] = None
 
     async def initialize(self) -> BrowserManagerInterface:
@@ -118,7 +120,7 @@ class BrowserManager:
             else:
                 raise ValueError(f"Unsupported framework: {self.framework}")
 
-            await self._browser_impl.launch()
+            await self._browser_impl.launch(headless=self.headless)
             logger.info("Browser framework initialized", framework=self.framework)
             return self._browser_impl
 

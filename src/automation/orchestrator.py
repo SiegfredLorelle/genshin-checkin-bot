@@ -28,7 +28,10 @@ class AutomationOrchestrator:
             config_manager: Optional configuration manager instance
         """
         self.config = config_manager or ConfigurationManager()
-        self.browser_manager = BrowserManager(framework="playwright")
+        browser_config = self.config.get_browser_config()
+        self.browser_manager = BrowserManager(
+            framework="playwright", headless=browser_config.get("headless", True)
+        )
         self.reward_detector = RewardDetector()
         self.state_manager = StateManager()
         self.browser_impl = None
@@ -103,6 +106,10 @@ class AutomationOrchestrator:
             if not auth_result:
                 raise AuthenticationError("Authentication failed")
 
+            # Step 2.5: Close any blocking modals
+            await self._close_blocking_modals()
+            workflow_result["step_completed"] = "modal_handling"
+
             # Step 3: Detect reward availability
             detection_result = await self.reward_detector.detect_reward_availability(
                 self.browser_impl
@@ -129,8 +136,10 @@ class AutomationOrchestrator:
 
                 # Step 5: Validate claim success
                 if claiming_result.get("success"):
-                    validation_result = await self.reward_detector.validate_claim_success(
-                        self.browser_impl, pre_claim_state
+                    validation_result = (
+                        await self.reward_detector.validate_claim_success(
+                            self.browser_impl, pre_claim_state
+                        )
                     )
                     workflow_result["validation_results"] = validation_result
                     workflow_result["step_completed"] = "claim_validation"
@@ -143,7 +152,10 @@ class AutomationOrchestrator:
 
             else:
                 logger.info("No claimable rewards found")
-                workflow_result["claiming_results"] = {"no_rewards": True, "success": True}
+                workflow_result["claiming_results"] = {
+                    "no_rewards": True,
+                    "success": True,
+                }
                 workflow_result["step_completed"] = "no_rewards_to_claim"
 
             # Step 6: Log execution results
@@ -169,7 +181,9 @@ class AutomationOrchestrator:
             workflow_result["errors"].append(str(e))
 
             # Capture debug screenshot
-            screenshot_path = await self._capture_debug_screenshot("checkin_workflow_error")
+            screenshot_path = await self._capture_debug_screenshot(
+                "checkin_workflow_error"
+            )
             if screenshot_path:
                 workflow_result["screenshots"].append(screenshot_path)
 
@@ -322,7 +336,9 @@ class AutomationOrchestrator:
 
         except Exception as handling_error:
             logger.error("Error handling failed", error=str(handling_error))
-            error_handling_result["error_message"] += f" | Handling failed: {handling_error}"
+            error_handling_result[
+                "error_message"
+            ] += f" | Handling failed: {handling_error}"
 
         return error_handling_result
 
@@ -340,23 +356,33 @@ class AutomationOrchestrator:
                 "step_completed": workflow_result.get("step_completed"),
                 "reward_detection": {
                     "total_rewards": len(
-                        workflow_result.get("reward_detection", {}).get("claimable_rewards", [])
+                        workflow_result.get("reward_detection", {}).get(
+                            "claimable_rewards", []
+                        )
                     ),
                     "detection_confidence": (
-                        workflow_result.get("reward_detection", {}).get("detection_confidence", 0.0)
+                        workflow_result.get("reward_detection", {}).get(
+                            "detection_confidence", 0.0
+                        )
                     ),
                 },
                 "claiming_results": {
                     "claims_processed": (
-                        workflow_result.get("claiming_results", {}).get("claims_processed", 0)
+                        workflow_result.get("claiming_results", {}).get(
+                            "claims_processed", 0
+                        )
                     ),
                     "claiming_success": (
-                        workflow_result.get("claiming_results", {}).get("success", False)
+                        workflow_result.get("claiming_results", {}).get(
+                            "success", False
+                        )
                     ),
                 },
                 "validation_results": {
                     "claim_validated": (
-                        workflow_result.get("validation_results", {}).get("claim_validated", False)
+                        workflow_result.get("validation_results", {}).get(
+                            "claim_validated", False
+                        )
                     ),
                     "validation_confidence": (
                         workflow_result.get("validation_results", {}).get(
@@ -379,7 +405,9 @@ class AutomationOrchestrator:
             logger.info(
                 "Execution result logged",
                 success=execution_record["success"],
-                claims_processed=(execution_record["claiming_results"]["claims_processed"]),
+                claims_processed=(
+                    execution_record["claiming_results"]["claims_processed"]
+                ),
             )
 
         except Exception as e:
@@ -424,6 +452,68 @@ class AutomationOrchestrator:
         except Exception as e:
             logger.error("Authentication failed", error=str(e))
             return False
+
+    async def _close_blocking_modals(self) -> None:
+        """Close any blocking modals that may appear after page load.
+
+        This handles modals like:
+        - App download promotion modal
+        - Cookie consent dialogs
+        - Age verification popups
+        """
+        try:
+            logger.info("Checking for blocking modals")
+
+            # Wait a bit for modals to appear
+            from ..utils.timing import page_load_delay
+
+            await page_load_delay()
+
+            # List of modal close button selectors to try
+            modal_close_selectors = [
+                # App download modal close button
+                ".components-home-assets-__sign-guide_---guide-close---2VvmzE",
+                "span.components-home-assets-__sign-guide_---guide-close---2VvmzE",
+                # Generic modal close buttons
+                ".modal-close",
+                ".close-button",
+                "[aria-label='Close']",
+                "button[class*='close']",
+                "span[class*='close']",
+            ]
+
+            closed_count = 0
+            for selector in modal_close_selectors:
+                try:
+                    # Check if element exists
+                    element_found = await self.browser_impl.find_element(
+                        selector, timeout=2000
+                    )
+
+                    if element_found:
+                        # Click the close button
+                        await self.browser_impl.page.click(selector)
+                        closed_count += 1
+                        logger.info(f"Closed modal using selector: {selector}")
+
+                        # Wait a moment after closing
+                        import asyncio
+
+                        await asyncio.sleep(0.5)
+
+                except Exception:
+                    # Element not found or click failed, continue to next selector
+                    logger.debug(f"Modal close selector not found: {selector}")
+                    continue
+
+            if closed_count > 0:
+                logger.info(f"Closed {closed_count} modal(s)")
+            else:
+                logger.info("No blocking modals found")
+
+        except Exception as e:
+            logger.warning(f"Error while closing modals: {str(e)}")
+            # Don't fail the workflow if modal closing fails
 
     async def _set_authentication_cookies(self, credentials) -> None:
         """Set HoYoLAB authentication cookies.
@@ -485,7 +575,9 @@ class AutomationOrchestrator:
             await self.browser_impl.set_cookie(cookie)
 
         except Exception as e:
-            logger.error("Failed to set cookie", cookie_name=cookie.get("name"), error=str(e))
+            logger.error(
+                "Failed to set cookie", cookie_name=cookie.get("name"), error=str(e)
+            )
             raise
 
     async def _validate_authentication(self) -> bool:
@@ -522,7 +614,9 @@ class AutomationOrchestrator:
             logger.info("Starting interface analysis")
 
             # Perform comprehensive interface analysis
-            analysis_result = await self.reward_detector.analyze_interface(self.browser_impl)
+            analysis_result = await self.reward_detector.analyze_interface(
+                self.browser_impl
+            )
 
             # Generate detailed interface report
             report = await self._generate_interface_report(analysis_result)
@@ -544,7 +638,9 @@ class AutomationOrchestrator:
             logger.error("Interface analysis failed", error=str(e))
             return {"error": str(e), "selectors": [], "detection_confidence": 0.0}
 
-    async def _generate_interface_report(self, analysis_result: Dict[str, Any]) -> Dict[str, Any]:
+    async def _generate_interface_report(
+        self, analysis_result: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Generate detailed interface analysis report.
 
         Args:
@@ -595,9 +691,13 @@ class AutomationOrchestrator:
                 }
 
                 if confidence >= 0.8:
-                    report["selector_inventory"]["high_confidence"].append(selector_info)
+                    report["selector_inventory"]["high_confidence"].append(
+                        selector_info
+                    )
                 elif confidence >= 0.5:
-                    report["selector_inventory"]["medium_confidence"].append(selector_info)
+                    report["selector_inventory"]["medium_confidence"].append(
+                        selector_info
+                    )
                 else:
                     report["selector_inventory"]["low_confidence"].append(selector_info)
 
@@ -607,7 +707,9 @@ class AutomationOrchestrator:
 
             if total_selectors > 0:
                 stability_score = (high_conf_count / total_selectors) * 100
-                report["reliability_assessment"]["stability_score"] = round(stability_score, 2)
+                report["reliability_assessment"]["stability_score"] = round(
+                    stability_score, 2
+                )
 
             # Add monitoring recommendations
             if stability_score < 50:
