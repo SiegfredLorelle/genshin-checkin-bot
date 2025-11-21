@@ -21,12 +21,12 @@ module.exports = {
     ],
     // Subject line cannot be empty
     'subject-empty': [2, 'never'],
-    // Subject line max length (72 chars is conventional)
-    'subject-max-length': [2, 'always', 72],
+    // Subject line max length (50 chars enforced)
+    'subject-max-length': [2, 'always', 50],
     // Subject must be lowercase
     'subject-case': [2, 'always', 'lower-case'],
-    // Body max line length
-    'body-max-line-length': [2, 'always', 100],
+    // Body max line length (72 chars)
+    'body-max-line-length': [2, 'always', 72],
     // Type must be lowercase
     'type-case': [2, 'always', 'lower-case'],
     // Type cannot be empty

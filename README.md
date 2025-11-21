@@ -1,12 +1,12 @@
 # Genshin Impact HoYoLAB Check-in Bot
 
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 An automated browser-based solution for daily HoYoLAB check-ins with robust error handling and multi-framework support.
 
-> **⚠️ Important**: This project uses [`uv`](https://docs.astral.sh/uv/) for dependency management. Traditional pip/venv workflows are not supported. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup instructions.
+> **⚠️ CRITICAL**: This project **REQUIRES** [`uv`](https://docs.astral.sh/uv/) for dependency management and Python version management. Traditional pip/venv workflows are **NOT SUPPORTED**. All Python commands must be prefixed with `uv run`. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for details.
 
 ## Features
 
@@ -17,10 +17,12 @@ An automated browser-based solution for daily HoYoLAB check-ins with robust erro
 
 ## Prerequisites
 
-- **Python 3.9+** (Check with `python3 --version`)
-- **uv** - Modern Python package manager ([Install Guide](https://docs.astral.sh/uv/getting-started/installation/))
+- **Python 3.11+** - Project is pinned to Python 3.11 via `.python-version`
+- **uv** - **REQUIRED** Python package manager ([Install Guide](https://docs.astral.sh/uv/getting-started/installation/))
 - **Git** for repository management
 - **Chrome/Chromium browser** (automatically managed by Playwright)
+
+> **📌 Important**: The project uses `.python-version` to pin Python 3.11. Your system `python` command may differ, but `uv run python` will automatically use the correct version. Always use `uv run` for all Python commands.
 
 ## Quick Start
 
@@ -55,6 +57,9 @@ cp .env.example .env
 ### 3. Test Installation
 
 ```bash
+# Verify Python version (should show 3.11.x)
+uv run python --version
+
 # Run dependency verification
 uv run python scripts/verify_dependencies.py
 
@@ -64,6 +69,8 @@ uv run pytest tests/unit/
 # Test browser automation (dry run)
 uv run python -m src.automation.orchestrator --dry-run
 ```
+
+> **⚠️ Common Mistake**: Do NOT run `python script.py` directly. Always use `uv run python script.py` to ensure the correct Python version (3.11) and dependencies are used.
 
 ## Credential Configuration
 
@@ -98,6 +105,8 @@ BROWSER_FRAMEWORK=playwright  # or "selenium"
 
 ## Development Commands
 
+> **🔴 CRITICAL**: ALL commands below MUST be run with `uv run` prefix. Direct Python execution will use the wrong version and dependencies.
+
 ```bash
 # Code Quality
 uv run black src/ tests/              # Format code
@@ -118,6 +127,12 @@ uv run python -m src.automation.orchestrator --dry-run # Test without actions
 uv add package-name                   # Add new package
 uv add --dev package-name             # Add dev dependency
 uv lock --upgrade                     # Update lock file
+uv sync                               # Sync dependencies after pulling changes
+
+# Python Version Management
+uv python list                        # List available Python versions
+uv python install 3.11                # Install Python 3.11 if needed
+uv python pin 3.11                    # Pin project to Python 3.11 (updates .python-version)
 ```
 
 ## Browser Framework Selection
@@ -157,8 +172,8 @@ The system automatically falls back to Selenium if Playwright fails. Manual swit
 # Set in .env file
 BROWSER_FRAMEWORK=selenium
 
-# Or via command line
-python -m src.automation.orchestrator --framework selenium
+# Or via command line (MUST use uv run)
+uv run python -m src.automation.orchestrator --framework selenium
 ```
 
 ## Troubleshooting

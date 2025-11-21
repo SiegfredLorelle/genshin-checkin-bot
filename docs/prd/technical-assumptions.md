@@ -17,7 +17,7 @@ Single repository containing all automation scripts, workflows, documentation, a
 
 ## Additional Technical Assumptions and Requests
 
-- **Language & Runtime:** Python 3.9+ with exact version pinning in GitHub Actions and local development for environment consistency
+- **Language & Runtime:** Python 3.11+ with exact version pinning in GitHub Actions and local development for environment consistency
 - **Browser Automation:** Evaluate Playwright vs Selenium WebDriver through prototype testing against actual HoYoLAB interface before architectural commitment
 - **Anti-Bot Detection:** Implement randomized timing (2-8 second delays), realistic user-agent strings, and session cookie management to mitigate detection
 - **Dependency Management:** pip with requirements.txt and exact version pinning, monthly security review of Python packages with automated dependency updates

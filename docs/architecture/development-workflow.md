@@ -6,7 +6,7 @@ The development setup and workflow supports both local development and cloud dep
 
 **Prerequisites:**
 ```bash
-# Install Python 3.9+
+# Install Python 3.11+
 python3 --version
 
 # Install uv (fast Python package manager)
@@ -57,7 +57,7 @@ cp .env.example .env
 # Start local automation test
 uv run python -m src.automation.orchestrator --dry-run
 
-# Run specific test suites  
+# Run specific test suites
 uv run pytest tests/unit/                    # Unit tests only
 uv run pytest tests/integration/             # Integration tests only
 uv run pytest tests/                        # All tests
@@ -98,7 +98,7 @@ uv tree
 HOYOLAB_LTUID=your_user_id_here
 HOYOLAB_LTOKEN=your_auth_token_here
 
-# Automation Configuration  
+# Automation Configuration
 CHECKIN_URL=https://act.hoyolab.com/ys/event/signin-sea-v3/index.html
 ACT_ID=e202102251931481
 USER_AGENT="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"

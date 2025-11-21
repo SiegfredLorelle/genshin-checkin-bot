@@ -22,7 +22,7 @@ The Genshin Impact Check-in Bot employs a **serverless automation architecture**
 genshin-checkin-bot/
 ├── src/                        # Core automation code
 │   ├── automation/             # Browser automation logic
-│   ├── detection/              # Reward detection strategies  
+│   ├── detection/              # Reward detection strategies
 │   ├── config/                 # Configuration management
 │   └── utils/                  # Shared utilities
 ├── tests/                      # Comprehensive test suite
@@ -38,23 +38,23 @@ genshin-checkin-bot/
 graph TB
     User[User] --> GH[GitHub Repository]
     GH --> Secrets[GitHub Secrets<br/>HoYoLAB Credentials]
-    
-    Schedule[GitHub Actions<br/>Cron Schedule] --> Runner[Ubuntu Runner<br/>Python 3.9+]
-    
+
+    Schedule[GitHub Actions<br/>Cron Schedule] --> Runner[Ubuntu Runner<br/>Python 3.11+]
+
     Runner --> Chrome[Chrome Headless<br/>Selenium/Playwright]
     Chrome --> HoYoLAB[HoYoLAB Website<br/>Check-in Interface]
-    
+
     Runner --> Detection[Reward Detection<br/>CSS Selectors]
     Runner --> Claiming[Reward Claiming<br/>Automation Logic]
-    
+
     Runner --> Logging[File-based Logging<br/>State Management]
     Runner --> Screenshots[Screenshot Capture<br/>On Failures]
-    
+
     Logging --> Repo[Repository Storage<br/>Execution History]
     Screenshots --> Artifacts[GitHub Artifacts<br/>Debug Evidence]
-    
+
     Runner --> Notifications[GitHub Actions<br/>Success/Failure Status]
-    
+
     Manual[Manual Trigger] --> Runner
 ```
 

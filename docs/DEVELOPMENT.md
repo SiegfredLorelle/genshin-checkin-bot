@@ -67,8 +67,8 @@ uv run pre-commit install --hook-type commit-msg
 **On commit message:**
 - Conventional Commits format validation
 - Type prefix required (feat, fix, docs, etc.)
-- Subject line max 72 characters
-- Body lines max 100 characters
+- Subject line max 50 characters
+- Body lines max 72 characters
 
 ### Commit Message Format
 
@@ -203,7 +203,7 @@ See `.github/workflows/commit-lint.yml` for the CI configuration.
 
 ## Requirements
 
-- Python 3.9 or higher
+- Python 3.11 or higher
 - uv (latest version recommended)
 - Git
 

@@ -28,29 +28,29 @@ jobs:
   checkin:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    
+
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up Python 3.9
+
+    - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
-        
+        python-version: '3.11'
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        
+
     - name: Install Playwright browsers
       run: playwright install chromium
-      
+
     - name: Run check-in automation
       env:
         HOYOLAB_LTUID: ${{ secrets.HOYOLAB_LTUID }}
         HOYOLAB_LTOKEN: ${{ secrets.HOYOLAB_LTOKEN }}
       run: python -m src.automation.orchestrator
-      
+
     - name: Upload failure screenshots
       if: failure()
       uses: actions/upload-artifact@v3
@@ -58,7 +58,7 @@ jobs:
         name: failure-screenshots
         path: logs/screenshots/
         retention-days: 30
-        
+
     - name: Commit execution logs
       if: always()
       run: |

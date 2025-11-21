@@ -303,20 +303,20 @@ def check_python_version() -> bool:
         print(f"✅ Python {version.major}.{version.minor}.{version.micro}")
         return True
     else:
-        print(f"❌ Python {version.major}.{version.minor}.{version.micro} (requires 3.9+)")
+        print(f"❌ Python {version.major}.{version.minor}.{version.micro} (requires 3.11+)")
         return False
 
 def check_dependencies() -> List[Tuple[str, bool]]:
     """Check required dependencies."""
     dependencies = [
         'playwright',
-        'selenium', 
+        'selenium',
         'httpx',
         'decouple',
         'structlog',
         'pytest',
     ]
-    
+
     results = []
     for dep in dependencies:
         try:
@@ -326,7 +326,7 @@ def check_dependencies() -> List[Tuple[str, bool]]:
         except ImportError:
             print(f"❌ {dep}")
             results.append((dep, False))
-    
+
     return results
 
 def check_browser_frameworks() -> None:
@@ -337,7 +337,7 @@ def check_browser_frameworks() -> None:
         print("✅ Playwright available")
     except ImportError:
         print("❌ Playwright not available")
-    
+
     # Test Selenium
     try:
         from selenium import webdriver
@@ -347,26 +347,26 @@ def check_browser_frameworks() -> None:
 
 if __name__ == "__main__":
     print("🔍 Verifying Dependencies...\n")
-    
+
     python_ok = check_python_version()
     print()
-    
+
     dep_results = check_dependencies()
     print()
-    
+
     check_browser_frameworks()
     print()
-    
+
     # Summary
     failed_deps = [dep for dep, success in dep_results if not success]
-    
+
     if python_ok and not failed_deps:
         print("🎉 All dependencies verified successfully!")
         sys.exit(0)
     else:
         print("🚨 Issues found:")
         if not python_ok:
-            print("  - Upgrade Python to 3.9+")
+            print("  - Upgrade Python to 3.11+")
         if failed_deps:
             print(f"  - Install missing dependencies: {', '.join(failed_deps)}")
         sys.exit(1)

@@ -17,9 +17,9 @@ Based on the architectural patterns, tech stack, and data models from above, the
 
 **Dependencies:** BrowserManager, RewardDetector, ConfigurationManager, StateManager
 
-**Technology Stack:** Python 3.9+, structlog for logging, python-decouple for configuration
+**Technology Stack:** Python 3.11+, structlog for logging, python-decouple for configuration
 
-## BrowserManager  
+## BrowserManager
 
 **Responsibility:** Browser lifecycle management including initialization, authentication, navigation, and cleanup with anti-bot detection measures.
 
@@ -42,7 +42,7 @@ Based on the architectural patterns, tech stack, and data models from above, the
 - `claim_available_rewards()` - Automated clicking and UI interaction
 - `validate_claim_success()` - Post-action verification of reward collection
 
-**Dependencies:** BrowserManager for DOM access, ConfigurationManager for selector configuration  
+**Dependencies:** BrowserManager for DOM access, ConfigurationManager for selector configuration
 
 **Technology Stack:** CSS selectors, Playwright element detection, randomized timing delays
 
@@ -82,25 +82,25 @@ graph TB
         Schedule[Scheduled Execution]
         Manual[Manual Trigger]
     end
-    
+
     Schedule --> Orchestrator[AutomationOrchestrator]
     Manual --> Orchestrator
-    
+
     Orchestrator --> Browser[BrowserManager]
     Orchestrator --> Detector[RewardDetector]
     Orchestrator --> State[StateManager]
-    
+
     Browser --> Config[ConfigurationManager]
     Detector --> Config
     Detector --> Browser
     State --> Config
-    
+
     Browser --> Playwright[Playwright/Selenium]
     Config --> Secrets[GitHub Secrets]
     State --> FileSystem[JSON Files]
-    
+
     Playwright --> HoYoLAB[HoYoLAB Website]
-    
+
     subgraph "External Dependencies"
         Secrets
         HoYoLAB

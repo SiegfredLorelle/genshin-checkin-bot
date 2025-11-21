@@ -4,7 +4,7 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 
 | Category | Technology | Version | Purpose | Rationale |
 |----------|------------|---------|---------|-----------|
-| Backend Language | Python | 3.9+ | Core automation logic and browser control | Mature ecosystem for web automation, excellent library support, readable for educational goals |
+| Backend Language | Python | 3.11+ | Core automation logic and browser control | Mature ecosystem for web automation, excellent library support, readable for educational goals, modern performance improvements |
 | Browser Automation | Playwright | ^1.40.0 | Primary web automation framework | Superior reliability vs Selenium, better async support, built-in waiting strategies, excellent debugging tools |
 | Browser Automation (Fallback) | Selenium WebDriver | ^4.15.0 | Backup automation option | Widely documented, fallback if Playwright issues, industry standard for learning |
 | Browser Engine | Chromium | Latest (via Playwright) | Headless browser execution | Consistent rendering, good GitHub Actions support, reliable automation target |
