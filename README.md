@@ -101,7 +101,7 @@ BROWSER_FRAMEWORK=playwright  # or "selenium"
 ```bash
 # Code Quality
 uv run black src/ tests/              # Format code
-uv run isort src/ tests/              # Sort imports  
+uv run isort src/ tests/              # Sort imports
 uv run flake8 src/ tests/             # Lint code
 uv run mypy src/                      # Type checking
 
@@ -255,10 +255,22 @@ genshin-checkin-bot/
 
 ## Contributing
 
-1. Follow code style: `black` formatting, `isort` imports, `flake8` linting
-2. Add tests for new features
-3. Update documentation for API changes
-4. Ensure all tests pass: `pytest tests/`
+1. **Set up commit message template** (recommended):
+   ```bash
+   git config commit.template .gitmessage
+   ```
+2. **Install pre-commit hooks**:
+   ```bash
+   uv run pre-commit install
+   uv run pre-commit install --hook-type commit-msg
+   ```
+3. Follow code style: `black` formatting, `isort` imports, `flake8` linting
+4. Follow [Conventional Commits](https://www.conventionalcommits.org/) format for commit messages
+5. Add tests for new features
+6. Update documentation for API changes
+7. Ensure all tests pass: `pytest tests/`
+
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for detailed development setup and [.github/COMMIT_CONVENTION.md](.github/COMMIT_CONVENTION.md) for commit message guidelines.
 
 ## License
 

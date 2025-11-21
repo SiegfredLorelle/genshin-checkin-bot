@@ -31,6 +31,8 @@ module.exports = {
     'type-case': [2, 'always', 'lower-case'],
     // Type cannot be empty
     'type-empty': [2, 'never'],
+    // Scope is required
+    'scope-empty': [2, 'never'],
     // Scope must be lowercase
     'scope-case': [2, 'always', 'lower-case'],
   },

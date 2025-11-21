@@ -33,7 +33,10 @@ cp .env.example .env
 uv run pre-commit install
 uv run pre-commit install --hook-type commit-msg
 
-# 6. Run tests
+# 6. Configure git commit template (optional but recommended)
+git config commit.template .gitmessage
+
+# 7. Run tests
 uv run pytest
 ```
 
@@ -97,13 +100,14 @@ All commits must follow [Conventional Commits](https://www.conventionalcommits.o
 # Good commits
 git commit -m "feat(browser): add retry logic for element detection"
 git commit -m "fix(config): handle missing environment variables gracefully"
-git commit -m "docs: update setup instructions for uv"
+git commit -m "docs(setup): update setup instructions for uv"
 git commit -m "test(detector): add tests for reward claiming workflow"
 
 # Bad commits (will be rejected)
 git commit -m "Updated stuff"  # No type
+git commit -m "feat: new feature"  # No scope
 git commit -m "feat: Add new feature that exceeds the maximum allowed character length for subject"  # Too long
-git commit -m "FEAT: new feature"  # Uppercase type
+git commit -m "FEAT(browser): new feature"  # Uppercase type
 ```
 
 ### Manual Hook Execution
@@ -124,8 +128,26 @@ uv run pre-commit run commitlint --hook-stage commit-msg --commit-msg-filename .
 
 ```bash
 # Skip pre-commit hooks (NOT recommended)
-git commit --no-verify -m "feat: emergency fix"
+git commit --no-verify -m "feat(scope): emergency fix"
 ```
+
+### Commit Message Template
+
+A commit message template is available to help you format messages correctly:
+
+```bash
+# Set up the template (one-time, per clone)
+git config commit.template .gitmessage
+
+# Now when you run git commit (without -m), you'll see the template
+git commit
+```
+
+The template includes:
+- Format reminder
+- List of valid types and common scopes
+- Formatting rules
+- Examples
 
 ## Common Commands
 

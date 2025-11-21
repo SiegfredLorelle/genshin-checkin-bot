@@ -15,7 +15,7 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 ### Components
 
 - **type** (required): The type of change
-- **scope** (optional): The area of the codebase affected
+- **scope** (required): The area of the codebase affected
 - **subject** (required): Short description in present tense
 - **body** (optional): Detailed explanation
 - **footer** (optional): Breaking changes, issue references
@@ -92,8 +92,11 @@ Add comprehensive tests covering:
 # ❌ No type
 Updated the browser manager
 
+# ❌ No scope
+feat: add new feature
+
 # ❌ Type in uppercase
-FEAT: new feature
+FEAT(browser): new feature
 
 # ❌ Subject too long
 feat: add a new feature that implements very complex logic with many different components and subsystems
