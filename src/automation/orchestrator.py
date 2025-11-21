@@ -98,7 +98,11 @@ class AutomationOrchestrator:
             await self._navigate_to_hoyolab()
             workflow_result["step_completed"] = "navigation"
 
-            # Step 2: Authenticate
+            # Step 2: Close any blocking modals FIRST (before login)
+            await self._close_blocking_modals()
+            workflow_result["step_completed"] = "modal_handling"
+
+            # Step 3: Authenticate (after modals are closed)
             auth_result = await self._authenticate()
             workflow_result["authentication_success"] = auth_result
             workflow_result["step_completed"] = "authentication"
@@ -106,14 +110,9 @@ class AutomationOrchestrator:
             if not auth_result:
                 raise AuthenticationError("Authentication failed")
 
-            # Step 2.5: Close any blocking modals
-            await self._close_blocking_modals()
-            workflow_result["step_completed"] = "modal_handling"
-
-            # Step 3: Detect reward availability
-            detection_result = await self.reward_detector.detect_reward_availability(
-                self.browser_impl
-            )
+            # Step 4: Detect reward availability (look for red point indicator)
+            logger.info("🔍 Looking for rewards with red point indicator...")
+            detection_result = await self._detect_rewards_with_red_point()
             workflow_result["reward_detection"] = detection_result
             workflow_result["step_completed"] = "reward_detection"
 
@@ -123,18 +122,19 @@ class AutomationOrchestrator:
                 confidence=detection_result.get("detection_confidence", 0.0),
             )
 
-            # Step 4: Claim rewards (skip if dry_run)
+            # Step 5: Claim rewards (skip if dry_run)
             if not dry_run and detection_result.get("claimable_rewards"):
                 # Store state for validation
                 pre_claim_state = detection_result.copy()
 
-                claiming_result = await self.reward_detector.claim_available_rewards(
-                    self.browser_impl, detection_result
+                # Directly click the reward element with red point
+                claiming_result = await self._claim_reward_with_red_point(
+                    detection_result
                 )
                 workflow_result["claiming_results"] = claiming_result
                 workflow_result["step_completed"] = "reward_claiming"
 
-                # Step 5: Validate claim success
+                # Step 6: Validate claim success
                 if claiming_result.get("success"):
                     validation_result = (
                         await self.reward_detector.validate_claim_success(
@@ -158,7 +158,7 @@ class AutomationOrchestrator:
                 }
                 workflow_result["step_completed"] = "no_rewards_to_claim"
 
-            # Step 6: Log execution results
+            # Step 7: Log execution results
             await self._log_execution_result(workflow_result)
 
             # Mark workflow as completed
@@ -431,8 +431,18 @@ class AutomationOrchestrator:
             # Get credentials from configuration
             credentials = self.config.get_hoyolab_credentials()
 
-            # Set authentication cookies
-            await self._set_authentication_cookies(credentials)
+            # Choose authentication method
+            if credentials.auth_method == "login":
+                # Use username/password login
+                auth_result = await self._login_with_credentials(credentials)
+            else:
+                # Use cookie-based authentication
+                await self._set_authentication_cookies(credentials)
+                auth_result = True
+
+            if not auth_result:
+                logger.warning("Authentication failed")
+                return False
 
             # Wait for page to load with authentication
             from ..utils.timing import page_load_delay
@@ -453,6 +463,202 @@ class AutomationOrchestrator:
             logger.error("Authentication failed", error=str(e))
             return False
 
+    async def _detect_rewards_with_red_point(self) -> Dict[str, Any]:
+        """Detect claimable rewards by looking for the red point indicator.
+
+        The red point indicator shows which reward is available to claim today.
+
+        Returns:
+            Detection result with claimable rewards
+        """
+        detection_result = {
+            "claimable_rewards": [],
+            "claimed_rewards": [],
+            "unavailable_rewards": [],
+            "total_rewards_found": 0,
+            "detection_confidence": 0.0,
+            "detection_method": "red_point_indicator",
+        }
+
+        try:
+            import asyncio
+
+            await asyncio.sleep(2)  # Wait for page to stabilize
+
+            # Selector for red point indicator based on provided HTML
+            # <span class="components-home-assets-__sign-content-test_---
+            # red-point---2jUBf9"></span>
+            red_point_selectors = [
+                (
+                    ".components-home-assets-__sign-content-test_---"
+                    "red-point---2jUBf9"
+                ),
+                "span[class*='red-point']",
+                ".red-point",
+            ]
+
+            logger.info("🔍 Looking for red point indicator on rewards...")
+
+            red_point_element = None
+            used_selector = None
+
+            # Try each selector
+            for selector in red_point_selectors:
+                try:
+                    logger.info(f"   Trying red point selector: {selector}")
+                    found = await self.browser_impl.find_element(selector, timeout=3000)
+                    if found:
+                        red_point_element = selector
+                        used_selector = selector
+                        logger.info(f"✓ Found red point with selector: {selector}")
+                        break
+                except Exception as e:
+                    logger.debug(f"Red point selector failed: {selector}", error=str(e))
+                    continue
+
+            if not red_point_element:
+                logger.warning(
+                    "❌ No red point indicator found - no claimable rewards today"
+                )
+                detection_result["detection_confidence"] = 0.3
+                return detection_result
+
+            # The red point is inside the sign-item wrapper, we need to click the parent
+            # Structure: div.sign-wrapper > div.actived-day > span.red-point
+            # We want to click the sign-wrapper div
+
+            # Try to get the clickable parent element
+            clickable_selectors = [
+                # Parent of red point
+                (
+                    ".components-home-assets-__sign-content-test_---sign-item"
+                    f"---3gtMqV:has({used_selector})"
+                ),
+                (
+                    ".components-home-assets-__sign-content-test_---sign-wrapper"
+                    f"---22GpLY:has({used_selector})"
+                ),
+                f"div[class*='sign-item']:has({used_selector})",
+                f"div[class*='sign-wrapper']:has({used_selector})",
+                # Generic parent selectors
+                f"{used_selector} >> xpath=../.. ",  # Go up 2 levels
+            ]
+
+            claimable_element = None
+            for selector in clickable_selectors:
+                try:
+                    logger.info(f"   Trying clickable parent: {selector[:60]}...")
+                    found = await self.browser_impl.find_element(selector, timeout=2000)
+                    if found:
+                        claimable_element = selector
+                        logger.info(
+                            "✓ Found clickable reward element: " f"{selector[:60]}..."
+                        )
+                        break
+                except Exception as e:
+                    logger.debug(
+                        f"Parent selector failed: {selector[:60]}", error=str(e)
+                    )
+                    continue
+
+            if claimable_element:
+                detection_result["claimable_rewards"].append(
+                    {
+                        "selector": claimable_element,
+                        "state": "claimable",
+                        "red_point_detected": True,
+                    }
+                )
+                detection_result["total_rewards_found"] = 1
+                detection_result["detection_confidence"] = 0.95
+                logger.info(
+                    "✓ Successfully identified claimable reward with "
+                    "red point indicator"
+                )
+            else:
+                logger.warning(
+                    "⚠ Found red point but couldn't identify clickable element"
+                )
+                detection_result["detection_confidence"] = 0.4
+
+            return detection_result
+
+        except Exception as e:
+            logger.error("Red point detection failed", error=str(e))
+            detection_result["detection_confidence"] = 0.0
+            return detection_result
+
+    async def _claim_reward_with_red_point(
+        self, detection_result: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Claim reward by clicking the element with red point indicator.
+
+        Args:
+            detection_result: Result from red point detection
+
+        Returns:
+            Claiming result with success status
+        """
+        claiming_result = {
+            "success": False,
+            "claims_processed": 0,
+            "successful_claims": [],
+            "failed_claims": [],
+            "error_details": [],
+        }
+
+        try:
+            import asyncio
+
+            claimable_rewards = detection_result.get("claimable_rewards", [])
+            if not claimable_rewards:
+                logger.warning("No claimable rewards to click")
+                return claiming_result
+
+            reward = claimable_rewards[0]
+            selector = reward.get("selector")
+
+            logger.info(
+                "🎯 Attempting to click reward with selector: " f"{selector[:80]}..."
+            )
+
+            # Wait a moment before clicking
+            await asyncio.sleep(1)
+
+            # Click using Playwright's page.click()
+            try:
+                await self.browser_impl.page.click(selector, timeout=10000)
+                logger.info("✓ Successfully clicked reward element!")
+
+                # Wait for claim to process
+                await asyncio.sleep(3)
+
+                claiming_result["success"] = True
+                claiming_result["claims_processed"] = 1
+                claiming_result["successful_claims"].append(
+                    {
+                        "selector": selector,
+                        "timestamp": self.state_manager.get_current_timestamp(),
+                    }
+                )
+
+            except Exception as click_error:
+                logger.error("❌ Failed to click reward element", error=str(click_error))
+                claiming_result["failed_claims"].append(
+                    {
+                        "selector": selector,
+                        "error": str(click_error),
+                    }
+                )
+                claiming_result["error_details"].append(str(click_error))
+
+            return claiming_result
+
+        except Exception as e:
+            logger.error("Reward claiming failed", error=str(e))
+            claiming_result["error_details"].append(str(e))
+            return claiming_result
+
     async def _close_blocking_modals(self) -> None:
         """Close any blocking modals that may appear after page load.
 
@@ -462,7 +668,7 @@ class AutomationOrchestrator:
         - Age verification popups
         """
         try:
-            logger.info("Checking for blocking modals")
+            logger.info("🔍 Checking for blocking modals...")
 
             # Wait a bit for modals to appear
             from ..utils.timing import page_load_delay
@@ -471,7 +677,7 @@ class AutomationOrchestrator:
 
             # List of modal close button selectors to try
             modal_close_selectors = [
-                # App download modal close button
+                # App download modal close button (specific from your HTML)
                 ".components-home-assets-__sign-guide_---guide-close---2VvmzE",
                 "span.components-home-assets-__sign-guide_---guide-close---2VvmzE",
                 # Generic modal close buttons
@@ -494,26 +700,264 @@ class AutomationOrchestrator:
                         # Click the close button
                         await self.browser_impl.page.click(selector)
                         closed_count += 1
-                        logger.info(f"Closed modal using selector: {selector}")
+                        logger.info(
+                            "✓ Closed modal using selector: " f"{selector[:60]}..."
+                        )
 
-                        # Wait a moment after closing
+                        # Wait a moment after closing for animations
                         import asyncio
 
-                        await asyncio.sleep(0.5)
+                        await asyncio.sleep(1.5)
 
                 except Exception:
                     # Element not found or click failed, continue to next selector
-                    logger.debug(f"Modal close selector not found: {selector}")
+                    logger.debug(f"Modal close selector not found: {selector[:60]}...")
                     continue
 
             if closed_count > 0:
-                logger.info(f"Closed {closed_count} modal(s)")
+                logger.info(f"✓ Successfully closed {closed_count} modal(s)")
             else:
-                logger.info("No blocking modals found")
+                logger.info(
+                    "ℹ No blocking modals found " "(this is normal if already closed)"
+                )
 
         except Exception as e:
-            logger.warning(f"Error while closing modals: {str(e)}")
+            logger.warning("⚠ Error while closing modals", error=str(e))
             # Don't fail the workflow if modal closing fails
+
+    async def _login_with_credentials(self, credentials) -> bool:
+        """Login using username and password.
+
+        Args:
+            credentials: HoYoLAB credentials object with username and password
+
+        Returns:
+            True if login successful, False otherwise
+        """
+        try:
+            logger.info("Starting username/password login flow")
+
+            # Wait for page to stabilize after modal closing
+            import asyncio
+
+            await asyncio.sleep(2)
+
+            # Step 1: Click the profile/avatar icon first
+            logger.info("Looking for profile/avatar icon to click...")
+            avatar_selectors = [
+                ".mhy-hoyolab-account-block__avatar-icon",
+                ".mhy-hoyolab-account-block__avatar",
+                ".mhy-hoyolab-account-block",
+            ]
+
+            avatar_clicked = False
+            for avatar_selector in avatar_selectors:
+                try:
+                    logger.info(f"Trying avatar selector: {avatar_selector}")
+                    element = await self.browser_impl.page.wait_for_selector(
+                        avatar_selector, state="visible", timeout=5000
+                    )
+                    if element:
+                        await self.browser_impl.page.click(
+                            avatar_selector, timeout=5000
+                        )
+                        logger.info(f"✓ Clicked profile icon: {avatar_selector}")
+                        avatar_clicked = True
+                        break
+                except Exception:
+                    logger.debug("Avatar selector failed", selector=avatar_selector)
+                    continue
+
+            if not avatar_clicked:
+                logger.error("✗ Could not find or click profile icon")
+                return False
+
+            # Step 2: Wait for the dropdown/modal to appear
+            # (give it time to render)
+            logger.info(
+                "⏳ Waiting 15 seconds for login modal/menu to appear "
+                "(modal shows late)..."
+            )
+            await asyncio.sleep(15)  # Increased wait - user confirmed modal shows late
+
+            # Step 3: Look for login iframe (HoYoLAB loads login form in iframe)
+            logger.info("🔍 Looking for login iframe...")
+            iframe = None
+            try:
+                # Wait a bit for iframe to load
+                await asyncio.sleep(3)
+
+                # Look for the HoYoLAB account iframe
+                frames = self.browser_impl.page.frames
+                logger.info(f"ℹ Found {len(frames)} frame(s) on page")
+
+                for frame in frames:
+                    frame_url = frame.url
+                    logger.info(f"   Frame URL: {frame_url[:120]}")
+                    if (
+                        "account.hoyolab.com" in frame_url
+                        or "login-platform" in frame_url
+                    ):
+                        logger.info("✓ Found login iframe!")
+                        iframe = frame
+                        break
+
+                if not iframe:
+                    logger.warning("⚠ No login iframe found yet, will try direct page")
+            except Exception as e:
+                logger.warning("Error checking for iframe", error=str(e))
+
+            # Step 4: Wait for the actual login FORM to fully render in iframe
+            if iframe:
+                logger.info(
+                    "⏳ Waiting 5 more seconds for login form in iframe "
+                    "to fully render..."
+                )
+                await asyncio.sleep(5)
+
+            # Use iframe if found, otherwise use main page
+            page_or_frame = iframe if iframe else self.browser_impl.page
+
+            if iframe:
+                logger.info("✓ Will interact with form inside iframe")
+            else:
+                logger.info("ℹ Will interact with form on main page")
+
+            # DEBUG: Log page content to see what's actually there
+            try:
+                page_content = await self.browser_impl.page.content()
+                # Check if login modal elements exist in the HTML
+                if "hyv-dialog-container" in page_content:
+                    logger.info("✓ Login dialog container found in HTML")
+                if "input" in page_content and "username" in page_content.lower():
+                    logger.info("✓ Username input field likely present")
+                if "el-dialog" in page_content:
+                    logger.info("✓ Element UI dialog found")
+
+                # Log a sample of the HTML around "username" if it exists
+                if "username" in page_content.lower():
+                    import re
+
+                    match = re.search(
+                        r".{100}username.{100}", page_content, re.IGNORECASE
+                    )
+                    if match:
+                        logger.info(
+                            f"HTML sample around 'username': ...{match.group()}..."
+                        )
+            except Exception as e:
+                logger.debug(f"Could not dump page content: {e}")
+
+            # Fill in username/email - try multiple selectors IN THE IFRAME
+            username_selectors = [
+                'input[name="username"]',  # Most likely based on your HTML
+                '.el-input__inner[name="username"]',  # With class from your HTML
+                'input[autocomplete="username"]',  # With autocomplete attribute
+                'input[type="text"][name="username"]',  # Full specification
+                'input[placeholder*="Username"]',
+                'input[placeholder*="Email"]',
+            ]
+
+            username_filled = False
+            for username_selector in username_selectors:
+                try:
+                    logger.info(f"   Trying username selector: {username_selector}")
+                    # Wait for the element to be visible IN THE FRAME
+                    await page_or_frame.wait_for_selector(
+                        username_selector, state="visible", timeout=5000
+                    )
+                    await page_or_frame.fill(
+                        username_selector, credentials.username, timeout=5000
+                    )
+                    logger.info(f"✓ Filled username: {credentials.username}")
+                    username_filled = True
+                    await asyncio.sleep(0.8)
+                    break
+                except Exception as e:
+                    logger.debug(f"   Failed: {str(e)[:60]}")
+                    continue
+
+            if not username_filled:
+                logger.error("✗ Failed to fill username with all selectors")
+                # Save debug screenshot
+                try:
+                    await self.browser_impl.page.screenshot(
+                        path="logs/screenshots/username_field_not_found.png"
+                    )
+                    logger.info(
+                        "📸 Debug screenshot: "
+                        "logs/screenshots/username_field_not_found.png"
+                    )
+                except Exception:
+                    pass
+                return False
+
+            # Fill in password - try multiple selectors IN THE IFRAME
+            password_selectors = [
+                'input[name="password"]',
+                'input[type="password"]',
+                '.el-input__inner[name="password"]',
+                '.el-input__inner[type="password"]',
+                'input[autocomplete="current-password"]',
+            ]
+
+            password_filled = False
+            for password_selector in password_selectors:
+                try:
+                    logger.info(f"   Trying password selector: {password_selector}")
+                    await page_or_frame.wait_for_selector(
+                        password_selector, state="visible", timeout=5000
+                    )
+                    await page_or_frame.fill(
+                        password_selector, credentials.password, timeout=5000
+                    )
+                    logger.info("✓ Filled password field")
+                    password_filled = True
+                    await asyncio.sleep(0.8)
+                    break
+                except Exception as e:
+                    logger.debug(f"   Failed: {str(e)[:60]}")
+                    continue
+
+            if not password_filled:
+                logger.error("✗ Failed to fill password with all selectors")
+                return False
+
+            # Click login button IN THE IFRAME
+            login_button_selectors = [
+                'button[type="submit"]',
+                "button.hyv-button",
+                'button:has-text("Log In")',
+                'button:has-text("Sign In")',
+                ".hyv-button-login",
+            ]
+
+            login_clicked = False
+            for login_button_selector in login_button_selectors:
+                try:
+                    logger.info(f"   Trying login button: {login_button_selector}")
+                    await page_or_frame.click(login_button_selector, timeout=5000)
+                    logger.info("✓ Clicked login button!")
+                    login_clicked = True
+                    break
+                except Exception as e:
+                    logger.debug(f"   Failed: {str(e)[:60]}")
+                    continue
+
+            if not login_clicked:
+                logger.error("✗ Failed to click login button")
+                return False
+
+            # Wait for login to process and page to load
+            logger.info("⏳ Waiting for login to process...")
+            await asyncio.sleep(5)
+
+            logger.info("✓ Login flow completed successfully")
+            return True
+
+        except Exception as e:
+            logger.error("✗ Login with credentials failed", error=str(e))
+            return False
 
     async def _set_authentication_cookies(self, credentials) -> None:
         """Set HoYoLAB authentication cookies.

@@ -19,9 +19,12 @@ logger = structlog.get_logger(__name__)
 class HoYoLABCredentials:
     """HoYoLAB authentication credentials."""
 
-    ltuid: str
-    ltoken: str
+    ltuid: Optional[str] = None
+    ltoken: Optional[str] = None
     account_id: Optional[str] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    auth_method: str = "cookies"  # "cookies" or "login"
 
 
 class ConfigurationManager:
@@ -54,26 +57,50 @@ class ConfigurationManager:
         """
         if self._credentials is None:
             try:
-                # For MVP: hardcoded credentials (migrate to GitHub Secrets in Epic 3)
+                # Determine authentication method
+                auth_method = config("AUTH_METHOD", default="cookies")
+
+                # Load credentials based on method
                 ltuid = config("HOYOLAB_LTUID", default=None)
                 ltoken = config("HOYOLAB_LTOKEN", default=None)
                 account_id = config("HOYOLAB_ACCOUNT_ID", default=None)
+                username = config("HOYOLAB_USERNAME", default=None)
+                password = config("HOYOLAB_PASSWORD", default=None)
 
-                if not ltuid or not ltoken:
-                    # MVP fallback: use hardcoded values for initial testing
-                    logger.warning("Using hardcoded credentials for MVP testing")
-                    ltuid = "YOUR_LTUID_HERE"  # Replace with actual for testing
-                    ltoken = "YOUR_LTOKEN_HERE"  # Replace with actual for testing
+                # Validate credentials based on auth method
+                if auth_method == "login":
+                    if not username or not password:
+                        raise ConfigurationError(
+                            "Username and password required for login "
+                            "authentication method"
+                        )
+                    logger.info("Using username/password authentication")
+                elif auth_method == "cookies":
+                    if not ltuid or not ltoken:
+                        raise ConfigurationError(
+                            "LTUID and LTOKEN required for cookie authentication method"
+                        )
+                    logger.info("Using cookie-based authentication")
+                else:
+                    raise ConfigurationError(f"Invalid AUTH_METHOD: {auth_method}")
 
                 self._credentials = HoYoLABCredentials(
-                    ltuid=ltuid, ltoken=ltoken, account_id=account_id
+                    ltuid=ltuid,
+                    ltoken=ltoken,
+                    account_id=account_id,
+                    username=username,
+                    password=password,
+                    auth_method=auth_method,
                 )
 
                 logger.info(
                     "HoYoLAB credentials loaded successfully",
+                    auth_method=auth_method,
                     has_ltuid=bool(ltuid),
                     has_ltoken=bool(ltoken),
                     has_account_id=bool(account_id),
+                    has_username=bool(username),
+                    has_password=bool(password),
                 )
 
             except Exception as e:
