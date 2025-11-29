@@ -21,8 +21,8 @@ module.exports = {
     ],
     // Subject line cannot be empty
     'subject-empty': [2, 'never'],
-    // Subject line max length (50 chars enforced)
-    'subject-max-length': [2, 'always', 50],
+    // Header (entire first line) max length (50 chars enforced for GitHub display)
+    'header-max-length': [2, 'always', 50],
     // Subject must be lowercase
     'subject-case': [2, 'always', 'lower-case'],
     // Body max line length (72 chars)
