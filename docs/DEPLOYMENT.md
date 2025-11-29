@@ -152,7 +152,7 @@ The workflow is **already configured** to run automatically!
 **Schedule:** Every day at 10 PM UTC (6 AM PHT)
 **Cron expression:** `0 22 * * *`
 
-No additional configuration needed - it will start running daily automatically.
+No additional configuration needed - it will start daily automatically.
 
 ### Modify Schedule (Optional)
 
@@ -220,7 +220,7 @@ Use https://crontab.guru/ to validate cron expressions.
 
 ### Manual Trigger (Dry Run)
 Use when testing or debugging:
-```
+```text
 Actions → Daily HoYoLAB Check-in → Run workflow
 ✅ Dry run: checked
 Reason: "Testing new changes"
@@ -228,7 +228,7 @@ Reason: "Testing new changes"
 
 ### Manual Trigger (Production)
 Use if automated run failed:
-```
+```text
 Actions → Daily HoYoLAB Check-in → Run workflow
 ⬜ Dry run: unchecked
 Reason: "Missed daily check-in"

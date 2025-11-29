@@ -11,7 +11,7 @@ Based on the PRD requirements, the system needs minimal but well-defined data mo
 - success: bool - Simple binary success/failure for NFR1 calculation
 - duration_seconds: float - Performance monitoring for GitHub Actions timeout management
 - error_message: Optional[str] - Failure reason for debugging (only when success=false)
-- screenshot_artifact: Optional[str] - GitHub Actions artifact name for failure screenshots
+- screenshot_path: Optional[str] - Path to failure screenshot for debugging
 - selector_used: str - Which CSS detection strategy succeeded ("primary", "fallback_1", "fallback_2")
 
 **Simplified Python Data Structure:**
@@ -22,7 +22,7 @@ class ExecutionLog:
     success: bool
     duration_seconds: float
     error_message: Optional[str] = None
-    screenshot_artifact: Optional[str] = None
+    screenshot_path: Optional[str] = None
     selector_used: str = "primary"
 
     def to_dict(self) -> dict:

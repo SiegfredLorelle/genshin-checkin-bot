@@ -23,9 +23,9 @@
 ### 2. Documentation Suite
 
 **docs/DEPLOYMENT-QUICKSTART.md** (2.3 KB)
-- 5-minute quick start guide
-- Copy-paste ready commands
-- Quick troubleshooting table
+- 5-minute quick-start guide
+- Copy-paste-ready commands
+- Quick-troubleshooting table
 
 **docs/DEPLOYMENT.md** (7.6 KB)
 - Comprehensive step-by-step guide
