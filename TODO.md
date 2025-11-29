@@ -13,16 +13,23 @@
 - [ ] Prioritize remaining stories based on production readiness needs
 
 ### Deployment & Infrastructure
-- [ ] Research deployment options for cron scheduling:
-  - GitHub Actions/Pages
-  - Vercel
-  - Render
+- [x] Research deployment options for cron scheduling:
+  - ✅ GitHub Actions (SELECTED - free tier, 2000 min/month)
+  - Vercel (not ideal for browser automation)
+  - Render (possible alternative)
   - Other alternatives (Railway, Fly.io, etc.)
-- [ ] Determine storage solution for logs and screenshots:
-  - GitHub Actions artifacts
-  - Cloud storage (S3, Cloudflare R2)
+- [x] Determine storage solution for logs and screenshots:
+  - ✅ GitHub Actions artifacts (SELECTED - 90 days logs, 30 days screenshots)
+  - Cloud storage (S3, Cloudflare R2) - not needed
   - Integrated platform storage
-- [ ] Evaluate cost, reliability, and maintenance for each option
+- [x] Evaluate cost, reliability, and maintenance for each option
+- [x] Create GitHub Actions workflow file (`.github/workflows/daily-checkin.yml`)
+- [x] Create comprehensive deployment documentation (`docs/DEPLOYMENT.md`)
+- [x] Update README with deployment section and workflow badge
+- [ ] Test workflow in GitHub Actions (requires push to GitHub)
+- [ ] Configure GitHub Secrets for credentials
+- [ ] Run initial dry-run test
+- [ ] Run production test and verify in-game
 
 ### Notifications & Monitoring
 - [ ] Implement failure notification system:
@@ -52,6 +59,10 @@
   - Other files exceeding line limits
 - [ ] Extract complex methods into smaller, focused functions
 - [ ] Apply modular design patterns where appropriate
+- [ ] Fix proper exit/cleanup after accepting rewards
+  - Ensure graceful exit after successful reward claiming
+  - Handle cleanup when reward is already claimed
+  - Implement proper error handling and cleanup on failures
 
 ### Testing Improvements
 - [ ] Create comprehensive end-to-end tests
