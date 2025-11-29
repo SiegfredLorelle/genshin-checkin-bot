@@ -4,20 +4,44 @@ Based on the architectural patterns, tech stack, and data models from above, the
 
 ## AutomationOrchestrator
 
-**Responsibility:** Main entry point that coordinates the complete check-in workflow from authentication through reward collection and state logging, with support for both scheduled and manual execution modes.
+**Responsibility:** Main entry point that coordinates the complete check-in workflow from authentication through reward collection and state logging, with support for both scheduled and manual execution modes. **Status: FULLY IMPLEMENTED**
 
 **Key Interfaces:**
-- `execute_checkin()` - Main automation workflow execution
-- `execute_manual_trigger()` - Manual fallback execution for critical streak maintenance
-- `handle_failure(exception)` - Centralized error handling and recovery
-- `log_execution_result(result)` - State management and success tracking
-- `validate_execution_mode()` - Determine scheduled vs manual execution context
+- `execute_checkin(dry_run=False)` - Main automation workflow with dry-run support for testing
+- `execute_workflow()` - Core workflow orchestration from navigation to reward claiming
+- `initialize()` - Component initialization and browser setup
+- `cleanup()` - Resource cleanup with async context manager support
 
-**Manual Trigger Support:** Provides emergency fallback option when scheduled automation fails, accessible via GitHub Actions manual dispatch or local script execution for critical streak maintenance.
+**Authentication Methods:**
+- **Username/Password Login** (Default/Recommended): Automated email/password form submission
+- **Cookie-Based Authentication**: Direct ltuid/ltoken cookie injection
+- Both methods support validation and error recovery
 
-**Dependencies:** BrowserManager, RewardDetector, ConfigurationManager, StateManager
+**Implementation Features:**
+- Dual authentication method support (username/password + cookies)
+- Dry-run mode for testing without actual claiming
+- Modal/popup blocking detection and automatic closing
+- Red point detection strategy for reward identification
+- Comprehensive error handling with screenshot capture on failure
+- State logging integration with success/failure tracking
+- Resource cleanup even on failures (async context managers)
+- Human-like timing delays throughout workflow
 
-**Technology Stack:** Python 3.11+, structlog for logging, python-decouple for configuration
+**Workflow Steps:**
+1. Initialize browser and components
+2. Navigate to HoYoLAB check-in page
+3. Authenticate (username/password or cookies)
+4. Close blocking modals if present
+5. Detect rewards using red point strategy
+6. Claim available rewards with confirmation handling
+7. Log execution result to state manager
+8. Cleanup resources
+
+**Manual Trigger Support:** Accessible via GitHub Actions manual dispatch with optional dry-run mode for testing without affecting reward claims.
+
+**Dependencies:** BrowserManager, RewardDetector, ConfigurationManager, StateManager, TimingUtils
+
+**Technology Stack:** Python 3.11+, structlog for logging, python-decouple for configuration, async/await patterns
 
 ## BrowserManager
 
@@ -35,44 +59,89 @@ Based on the architectural patterns, tech stack, and data models from above, the
 
 ## RewardDetector
 
-**Responsibility:** Intelligent reward state detection using multiple CSS selector strategies and fallback mechanisms for reliability.
+**Responsibility:** Intelligent reward detection using multiple CSS selector strategies and fallback mechanisms for reliability. **Status: FULLY IMPLEMENTED**
 
 **Key Interfaces:**
-- `detect_reward_availability()` - Multi-strategy detection with fallback logic
-- `claim_available_rewards()` - Automated clicking and UI interaction
-- `validate_claim_success()` - Post-action verification of reward collection
+- `detect_reward_availability()` - Multi-strategy detection with fallback logic, state differentiation (claimable/claimed/unavailable), and confidence scoring
+- `claim_available_rewards()` - Automated clicking and UI interaction with retry logic, confirmation dialog handling, and human-like timing delays
+- `validate_claim_success()` - Post-action verification through UI feedback detection, state change analysis, and screenshot capture
+- `handle_claiming_errors()` - Comprehensive error recovery for network timeouts, element not found, authentication failures, and UI changes
+- `analyze_interface()` - Interface analysis with strategy selection and selector discovery
 
-**Dependencies:** BrowserManager for DOM access, ConfigurationManager for selector configuration
+**Implementation Features:**
+- Red point detection strategy using `.mhy-icon-font-point` selector
+- Multi-layered fallback detection with confidence scoring
+- Confirmation dialog handling with multiple selector patterns
+- State change detection comparing pre/post claim states
+- Screenshot capture for success verification
+- Retry logic with configurable attempts
+- Human-like timing delays between interactions
 
-**Technology Stack:** CSS selectors, Playwright element detection, randomized timing delays
+**Dependencies:** BrowserManager for DOM access, ConfigurationManager for selector configuration, TimingUtils for anti-bot delays
+
+**Technology Stack:** CSS selectors, Playwright element detection, randomized timing delays, async/await patterns
 
 ## ConfigurationManager
 
-**Responsibility:** Centralized configuration management with environment variable handling, validation, and secure credential access.
+**Responsibility:** Centralized configuration management with environment variable handling, validation, and secure credential access. **Status: FULLY IMPLEMENTED** (includes validation logic)
 
 **Key Interfaces:**
-- `get_credentials()` - Secure access to HoYoLAB authentication tokens
-- `get_selector_config()` - CSS selector strategy configuration
+- `get_hoyolab_credentials()` - Secure access to HoYoLAB authentication (supports dual methods)
+- `get_hoyolab_url()` - HoYoLAB check-in URL configuration
+- `get_browser_config()` - Browser settings (headless, timeout, viewport, user agent)
+- `get_detection_config()` - Reward detection settings (timeouts, retries, selectors)
 - `get_timing_config()` - Anti-bot detection timing parameters
-- `validate_configuration()` - Startup configuration validation
+- `validate_environment()` - Comprehensive startup configuration validation
+- `redact_secrets()` - Secret redaction for safe logging
 
-**Dependencies:** GitHub Secrets integration, python-decouple
+**Authentication Configuration:**
+- Supports `AUTH_METHOD` environment variable ("login" or "cookies")
+- **Login method**: Requires `HOYOLAB_USERNAME` and `HOYOLAB_PASSWORD`
+- **Cookie method**: Requires `HOYOLAB_LTUID` and `HOYOLAB_LTOKEN`
+- Optional `HOYOLAB_ACCOUNT_ID` for additional context
 
-**Technology Stack:** python-decouple, GitHub Secrets API, environment variable validation
+**Configuration Features:**
+- Environment variable validation with clear error messages
+- Default values for all optional settings
+- Secret redaction for logging safety
+- Browser viewport and user agent customization
+- Detection retry and timeout configuration
+- Timing variance for human-like behavior
+
+**Dependencies:** GitHub Secrets integration (via environment variables), python-decouple
+
+**Technology Stack:** python-decouple, environment variable validation, dataclasses for credentials
 
 ## StateManager
 
-**Responsibility:** Execution history tracking, success rate calculation, and failure pattern analysis for NFR1 compliance monitoring.
+**Responsibility:** Execution history tracking, success rate calculation, and failure pattern analysis for NFR1 compliance monitoring. **Status: FULLY IMPLEMENTED** (includes analytics)
 
 **Key Interfaces:**
-- `log_execution(result)` - Record automation attempt with outcome
-- `calculate_success_rate(days)` - On-demand success rate calculation
-- `get_failure_patterns()` - Analysis of recent failure trends
-- `rotate_old_logs()` - Log management and repository size control
+- `log_execution_result(result)` - Record automation attempt with outcome in JSONL format
+- `calculate_success_rate(days=7)` - Calculate success rate over specified period with detailed statistics
+- `get_execution_history(limit)` - Retrieve execution history (most recent first)
+- `get_last_execution_result()` - Get most recent execution result
+- `cleanup_old_logs(keep_days=30)` - Automatic log rotation and cleanup
+- `initialize()` - Ensure log directory and file exist
 
-**Dependencies:** File system access for JSON Lines storage
+**Implementation Features:**
+- JSONL (JSON Lines) format for append-only logging
+- Async lock for thread-safe concurrent access
+- UTC timestamp handling with ISO 8601 format
+- Success rate calculation with configurable date ranges
+- Automatic log rotation to prevent file growth
+- Statistics include total executions, successful count, and percentage
+- Graceful handling of missing or corrupted log entries
 
-**Technology Stack:** JSON stdlib, file I/O, datetime calculations
+**Storage Format:**
+```json
+{"timestamp": "2025-11-30T06:00:00Z", "success": true, "duration_seconds": 23.4, "selector_used": "primary"}
+{"timestamp": "2025-11-30T07:00:00Z", "success": false, "duration_seconds": 45.2, "error_message": "...", "screenshot_artifact": "..."}
+```
+
+**Dependencies:** File system access for JSON Lines storage (`logs/execution_history.jsonl`)
+
+**Technology Stack:** JSON stdlib, asyncio locks, file I/O, datetime calculations with timezone support
 
 ## Component Diagrams
 
@@ -108,17 +177,28 @@ graph TB
     end
 ```
 
-## Epic Evolution Component Changes
+## Implementation Status
 
-**Epic 1 Components:**
-- AutomationOrchestrator (basic workflow)
-- BrowserManager (local browser)
-- RewardDetector (core CSS logic)
-- ConfigurationManager (hardcoded credentials)
-- StateManager (local file storage)
+**Current Status: Epic 1 Complete** (Local POC fully functional)
 
-**Epic 3 Component Enhancements:**
-- ConfigurationManager: GitHub Secrets integration
-- AutomationOrchestrator: Manual trigger support
-- StateManager: Repository-based storage
-- BrowserManager: Cloud environment optimization
+**Completed Components:**
+- ✅ AutomationOrchestrator (complete workflow with dry-run support)
+- ✅ BrowserManager (Playwright primary, Selenium fallback abstraction)
+- ✅ RewardDetector (complete with red point detection, claiming, validation)
+- ✅ ConfigurationManager (dual auth methods, GitHub Secrets ready)
+- ✅ StateManager (JSONL logging with analytics)
+- ✅ GitHub Actions workflow (daily-checkin.yml with manual trigger)
+- ✅ Deployment documentation (quick-start and comprehensive guides)
+
+**Key Features Implemented:**
+- Dual authentication (username/password + cookies)
+- Red point detection strategy (`.mhy-icon-font-point`)
+- Modal/popup blocking detection and closing
+- Comprehensive error handling with screenshot capture
+- Human-like timing delays throughout workflow
+- Dry-run mode for testing
+- Success rate tracking and analytics
+- Async/await patterns throughout
+- Resource cleanup with context managers
+
+**Ready for:** Epic 2 (Core Automation Engine enhancements) and user validation testing

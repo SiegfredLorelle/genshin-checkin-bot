@@ -8,7 +8,7 @@ Based on the PRD requirements, the system needs minimal but well-defined data mo
 
 **Key Attributes:**
 - timestamp: str - ISO 8601 execution time for sorting and period calculations
-- success: bool - Simple binary success/failure for NFR1 calculation  
+- success: bool - Simple binary success/failure for NFR1 calculation
 - duration_seconds: float - Performance monitoring for GitHub Actions timeout management
 - error_message: Optional[str] - Failure reason for debugging (only when success=false)
 - screenshot_artifact: Optional[str] - GitHub Actions artifact name for failure screenshots
@@ -24,7 +24,7 @@ class ExecutionLog:
     error_message: Optional[str] = None
     screenshot_artifact: Optional[str] = None
     selector_used: str = "primary"
-    
+
     def to_dict(self) -> dict:
         return asdict(self)
 ```
@@ -33,23 +33,30 @@ class ExecutionLog:
 ```python
 # Simple JSON Lines format - one log entry per line
 # logs/execution_history.jsonl
-{"timestamp": "2025-09-29T06:00:00Z", "success": true, "duration_seconds": 23.4, "selector_used": "primary"}
-{"timestamp": "2025-09-30T06:00:00Z", "success": false, "duration_seconds": 45.2, "error_message": "Element not found", "screenshot_artifact": "failure-2025-09-30.png", "selector_used": "fallback_1"}
+{"timestamp": "2025-11-30T06:00:00Z", "success": true, "duration_seconds": 23.4, "dry_run": false}
+{"timestamp": "2025-11-30T07:00:00Z", "success": false, "duration_seconds": 45.2, "error_message": "Element not found", "screenshot_path": "logs/screenshots/failure-2025-11-30.png", "dry_run": false}
 ```
 
-**Success Rate Calculation (On-Demand):**
+**Note:** The actual implementation may include additional fields based on execution context. Core fields (timestamp, success, duration_seconds) are always present.
+
+**Success Rate Calculation (Implemented in StateManager):**
 ```python
-def calculate_success_rate(days: int = 30) -> float:
-    """Calculate success rate for last N days from log file"""
-    cutoff = datetime.now() - timedelta(days=days)
-    
-    with open('logs/execution_history.jsonl', 'r') as f:
-        logs = [json.loads(line) for line in f 
-                if datetime.fromisoformat(json.loads(line)['timestamp']) >= cutoff]
-    
-    if not logs:
-        return 0.0
-        
-    successful = sum(1 for log in logs if log['success'])
-    return (successful / len(logs)) * 100
+async def calculate_success_rate(days: int = 7) -> Dict[str, Any]:
+    """Calculate success rate for last N days from log file
+
+    Returns:
+        {
+            "total_executions": int,
+            "successful_executions": int,
+            "success_rate": float,  # Percentage
+            "period_days": int,
+            "analysis_timestamp": str  # ISO 8601
+        }
+    """
+    # Implementation in src/state/manager.py
+    # Uses async file I/O with locking
+    # Filters logs by UTC timestamp comparison
+    # Returns detailed statistics dictionary
 ```
+
+**See:** `src/state/manager.py` for complete implementation with async support and thread safety.
