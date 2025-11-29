@@ -20,8 +20,7 @@
   - Other alternatives (Railway, Fly.io, etc.)
 - [x] Determine storage solution for logs and screenshots:
   - ✅ GitHub Actions artifacts (SELECTED - 90 days logs, 30 days screenshots)
-  - Cloud storage (S3, Cloudflare R2) - not needed
-  - Integrated platform storage
+  - Cloud storage (S3, Cloudflare R2) — not needed
 - [x] Evaluate cost, reliability, and maintenance for each option
 - [x] Create GitHub Actions workflow file (`.github/workflows/daily-checkin.yml`)
 - [x] Create comprehensive deployment documentation (`docs/DEPLOYMENT.md`)

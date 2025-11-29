@@ -50,7 +50,7 @@ cat .github/workflows/daily-checkin.yml | grep -E 'name:|on:|jobs:'
 ### 2. "Secret Not Found" Error
 
 **Symptoms:**
-```
+```bash
 Error: The secret `HOYOLAB_LTUID` has not been set
 ```
 
@@ -59,12 +59,12 @@ Error: The secret `HOYOLAB_LTUID` has not been set
 2. Verify secrets exist with **exact names** based on your auth method:
 
 **For Username/Password (default):**
-   - `HOYOLAB_USERNAME` (not `username` or `USERNAME`)
-   - `HOYOLAB_PASSWORD` (not `password` or `PASSWORD`)
+- `HOYOLAB_USERNAME` (not `username` or `USERNAME`)
+- `HOYOLAB_PASSWORD` (not `password` or `PASSWORD`)
 
 **For Cookies (if AUTH_METHOD=cookies):**
-   - `HOYOLAB_LTUID` (not `ltuid` or `LTUID`)
-   - `HOYOLAB_LTOKEN` (not `ltoken` or `LTOKEN`)
+- `HOYOLAB_LTUID` (not `ltuid` or `LTUID`)
+- `HOYOLAB_LTOKEN` (not `ltoken` or `LTOKEN`)
 
 3. If missing, add them
 4. If present, check for typos in workflow file
@@ -75,7 +75,7 @@ Run workflow manually with dry-run mode to verify secrets work.
 ### 3. Authentication Failure
 
 **Symptoms:**
-```
+```bash
 Authentication failed
 Invalid credentials
 Cookie expired
@@ -84,12 +84,12 @@ Cookie expired
 **Solutions:**
 
 **A. Wrong password (most common for login method):**
-1. Verify you can login manually at https://www.hoyolab.com
+1. Verify you can login manually at <https://www.hoyolab.com>
 2. Update `HOYOLAB_PASSWORD` secret in GitHub
 3. Re-run workflow
 
 **B. Expired cookies (if using cookie method):**
-1. Login fresh to https://www.hoyolab.com
+1. Login fresh to <https://www.hoyolab.com>
 2. Get new cookies (F12 → Application → Cookies)
 3. Update `HOYOLAB_LTUID` and `HOYOLAB_LTOKEN` secrets
 4. Re-run workflow
@@ -111,7 +111,7 @@ Cookie expired
 ### 4. Playwright Installation Fails
 
 **Symptoms:**
-```
+```bash
 Error: Playwright installation failed
 chromium browser not found
 ```
@@ -135,14 +135,14 @@ chromium browser not found
 ### 5. Timeout (5 Minutes)
 
 **Symptoms:**
-```
+```bash
 The job running on runner [...] exceeded the maximum execution time of 5 minutes
 ```
 
 **Causes & Solutions:**
 
 **A. HoYoLAB is slow/down:**
-- Check https://www.hoyolab.com is accessible
+- Check <https://www.hoyolab.com> is accessible
 - Wait and let tomorrow's run retry
 - Trigger manual run later
 
@@ -165,7 +165,7 @@ MAX_DELAY: 8.0 → 5.0
 ### 6. Python Version Issues
 
 **Symptoms:**
-```
+```bash
 Python 3.9 found but 3.11 required
 Module not found
 ```
@@ -191,7 +191,7 @@ run: python -m src          # ❌ Wrong
 ### 7. Dependency Installation Fails
 
 **Symptoms:**
-```
+```bash
 uv sync failed
 Package not found
 Dependency conflict
@@ -224,7 +224,7 @@ git push
 ### 8. Artifact Upload Fails
 
 **Symptoms:**
-```
+```yaml
 Error: Artifact upload failed
 No files matched pattern
 ```
@@ -345,7 +345,7 @@ If issues persist:
    - Screenshots (redact credentials!)
 
 2. **Check GitHub Status:**
-   - https://www.githubstatus.com/
+   - <https://www.githubstatus.com/>
    - Verify Actions service is operational
 
 3. **Open Issue:**

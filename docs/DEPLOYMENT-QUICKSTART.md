@@ -24,7 +24,7 @@ You have your HoYoLAB login credentials ready (email + password).
    - Name: `HOYOLAB_PASSWORD` | Value: [your password]
 
 **Alternative (Cookie method):** If you prefer cookies instead of login:
-1. Login to https://www.hoyolab.com → F12 → Cookies → Get `ltuid` and `ltoken`
+1. Login to [HoYoLab](https://www.hoyolab.com) → F12 → Cookies → Get `ltuid` and `ltoken`
 2. Add secrets: `HOYOLAB_LTUID` and `HOYOLAB_LTOKEN`
 3. Add variable: `AUTH_METHOD` = `cookies`
 
@@ -54,17 +54,17 @@ Automation runs automatically every day at 6 AM PHT (10 PM UTC).
 ## Quick Commands
 
 **Manual trigger (if you miss a day):**
-```
+```text
 Actions → Daily HoYoLAB Check-in → Run workflow
 ```
 
 **Check logs:**
-```
+```text
 Actions → Select run → Download "execution-logs-XXX"
 ```
 
 **Update cookies (every 3-6 months):**
-```
+```text
 Settings → Secrets → Click secret → Update secret
 ```
 
