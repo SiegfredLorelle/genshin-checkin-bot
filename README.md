@@ -1,10 +1,13 @@
 # Genshin Impact HoYoLAB Check-in Bot
 
+[![Daily Check-in](https://github.com/SiegfredLorelle/genshin-checkin-bot/actions/workflows/daily-checkin.yml/badge.svg)](https://github.com/SiegfredLorelle/genshin-checkin-bot/actions/workflows/daily-checkin.yml)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 An automated browser-based solution for daily HoYoLAB check-ins with robust error handling and multi-framework support.
+
+🚀 **NEW:** Now deployable to GitHub Actions for fully automated daily check-ins! See [Deployment Guide](docs/DEPLOYMENT.md).
 
 > **⚠️ CRITICAL**: This project **REQUIRES** [`uv`](https://docs.astral.sh/uv/) for dependency management and Python version management. Traditional pip/venv workflows are **NOT SUPPORTED**. All Python commands must be prefixed with `uv run`. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for details.
 
@@ -102,6 +105,30 @@ BROWSER_FRAMEWORK=playwright  # or "selenium"
 ```
 
 **⚠️ Security Note**: Never commit `.env` file to git. It's included in `.gitignore` for safety.
+
+## 🚀 Deployment (GitHub Actions)
+
+### Quick Deploy
+
+Want to run this automatically every day at 6 AM PHT? Deploy to GitHub Actions in 5 minutes:
+
+1. **Push to GitHub** (if not already)
+2. **Add Secrets**: Settings → Secrets → Actions
+   - `HOYOLAB_LTUID` = Your ltuid cookie
+   - `HOYOLAB_LTOKEN` = Your ltoken cookie
+3. **Enable Actions**: Settings → Actions → General → Allow all actions
+4. **Test Run**: Actions tab → Daily HoYoLAB Check-in → Run workflow (dry-run)
+5. **Done!** Runs automatically daily at 6 AM PHT
+
+📖 **Full deployment guide with screenshots:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+
+**Benefits:**
+- ✅ Zero cost (GitHub Actions free tier)
+- ✅ No server management
+- ✅ Secure credential storage
+- ✅ Automatic email notifications on failure
+- ✅ 90-day execution logs
+- ✅ Manual trigger button for missed runs
 
 ## Development Commands
 
