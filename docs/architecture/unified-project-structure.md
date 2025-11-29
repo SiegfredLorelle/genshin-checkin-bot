@@ -4,33 +4,33 @@ The following monorepo structure accommodates the automation requirements while 
 
 ```
 genshin-checkin-bot/
-├── .github/                    # CI/CD workflows
-│   └── workflows/
-│       ├── daily-checkin.yml   # Scheduled automation
-│       ├── manual-trigger.yml  # Manual fallback workflow
-│       └── test-suite.yml      # Testing and validation
+├── .github/                    # CI/CD and documentation
+│   ├── workflows/
+│   │   ├── daily-checkin.yml   # Scheduled automation with manual trigger
+│   │   └── commit-lint.yml     # Commit message validation
+│   ├── COMMIT_CONVENTION.md    # Conventional commits guide
+│   └── UV_QUICKREF.md          # uv package manager quick reference
 ├── src/                        # Core automation code
+│   ├── __init__.py
+│   ├── __main__.py             # CLI entry point
 │   ├── automation/             # Main automation logic
 │   │   ├── __init__.py
-│   │   ├── orchestrator.py     # AutomationOrchestrator
-│   │   └── workflows.py        # Workflow definitions
+│   │   └── orchestrator.py     # AutomationOrchestrator (complete workflow)
 │   ├── browser/                # Browser management
 │   │   ├── __init__.py
-│   │   ├── manager.py          # BrowserManager
+│   │   ├── manager.py          # BrowserManager (abstract interface)
 │   │   ├── playwright_impl.py  # Playwright implementation
 │   │   └── selenium_impl.py    # Selenium fallback
 │   ├── detection/              # Reward detection
 │   │   ├── __init__.py
-│   │   ├── detector.py         # RewardDetector
+│   │   ├── detector.py         # RewardDetector (complete implementation)
 │   │   └── strategies.py       # CSS selector strategies
 │   ├── config/                 # Configuration management
 │   │   ├── __init__.py
-│   │   ├── manager.py          # ConfigurationManager
-│   │   └── validation.py       # Config validation
+│   │   └── manager.py          # ConfigurationManager (includes validation)
 │   ├── state/                  # State management
 │   │   ├── __init__.py
-│   │   ├── manager.py          # StateManager
-│   │   └── analytics.py        # Success rate calculations
+│   │   └── manager.py          # StateManager (includes analytics)
 │   └── utils/                  # Shared utilities
 │       ├── __init__.py
 │       ├── logging_config.py   # Structured logging setup
