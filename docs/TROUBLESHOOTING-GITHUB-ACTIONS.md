@@ -108,7 +108,94 @@ Cookie expired
 - Verify you can manually check-in on HoYoLAB website
 - Check if account is banned/restricted
 
-### 4. Playwright Installation Fails
+### 4. No Rewards Detected (0 Rewards Found)
+
+**Symptoms:**
+```json
+"reward_detection": {"total_rewards": 0, "detection_confidence": 0.3}
+"step_completed": "no_rewards_to_claim"
+```
+
+**This is the most common issue!** Authentication works but no rewards are detected.
+
+**Root Cause:**
+Missing or incomplete `CHECKIN_URL` - the base URL without parameters loads the wrong event page.
+
+**Critical Discovery: The `act_id` Parameter**
+
+The `act_id` query parameter is **REQUIRED** and specifies which HoYoLAB event to load:
+
+```
+❌ WRONG (base URL only):
+https://act.hoyolab.com/ys/event/signin-sea-v3/index.html
+
+✅ CORRECT (with act_id and parameters):
+https://act.hoyolab.com/ys/event/signin-sea-v3/index.html?act_id=e202102251931481&hyl_auth_required=true&hyl_presentation_style=fullscreen&lang=en-us
+```
+
+**What is `act_id`?**
+- **Activity/Event ID** - NOT your account ID
+- **Region-specific event identifier**
+- **Same for ALL players** in the same region
+- Example: `e202102251931481` = Genshin Impact Daily Check-in (SEA/Global)
+
+**Why it matters:**
+- ✅ **With `act_id`**: Loads the correct regional event with YOUR rewards
+- ❌ **Without `act_id`**: Loads generic/wrong event page with no rewards
+- The red point indicator only appears on the correct event page
+
+**Solution:**
+
+**Step 1: Add CHECKIN_URL Variable in GitHub**
+
+1. Go to: `Settings → Secrets and variables → Actions → Variables`
+2. Click "New repository variable"
+3. Add:
+   - **Name:** `CHECKIN_URL`
+   - **Value:** (choose your region below)
+
+**Genshin Impact URLs (by region):**
+
+```bash
+# SEA/Global/Americas/EU (most common):
+https://act.hoyolab.com/ys/event/signin-sea-v3/index.html?act_id=e202102251931481&hyl_auth_required=true&hyl_presentation_style=fullscreen&utm_source=hoyolab&utm_medium=tools&lang=en-us&bbs_theme=dark&bbs_theme_device=1
+
+# China Mainland (CN):
+https://webstatic.mihoyo.com/bbs/event/signin-ys/index.html?act_id=e202009291139501&lang=zh-cn
+
+# TW/HK/MO:
+https://act.hoyolab.com/ys/event/signin/index.html?act_id=e202102251931481&lang=zh-tw
+```
+
+**Step 2: Verify in Local .env**
+
+Your local `.env` should have the full URL too:
+```bash
+CHECKIN_URL=https://act.hoyolab.com/ys/event/signin-sea-v3/index.html?act_id=e202102251931481&hyl_auth_required=true&hyl_presentation_style=fullscreen&utm_source=hoyolab&utm_medium=tools&lang=en-us&bbs_theme=dark&bbs_theme_device=1
+```
+
+**Step 3: Re-run Workflow**
+
+After adding the variable, manually trigger the workflow again.
+
+**How to Get Your Region's URL:**
+1. Login to <https://www.hoyolab.com>
+2. Navigate to Genshin Impact → Daily Check-in
+3. Copy the FULL URL from your browser address bar
+4. Use that exact URL (it includes your region's correct `act_id`)
+
+**Common `act_id` values:**
+
+| Game/Region | act_id | URL Pattern |
+|-------------|--------|-------------|
+| Genshin SEA/Global | `e202102251931481` | `signin-sea-v3` |
+| Genshin CN | `e202009291139501` | Different domain |
+| Honkai Impact | Different | Different event |
+| Star Rail | Different | Different event |
+
+**Note:** The `act_id` is the same for all accounts in the same region - it's not account-specific!
+
+### 5. Playwright Installation Fails
 
 **Symptoms:**
 ```bash
@@ -366,13 +453,14 @@ Run through this before troubleshooting:
 - [ ] Can manually check-in on HoYoLAB website
 - [ ] Local POC works (test before deploying)
 
-## �� Quick Fixes Summary
+## 🏁 Quick Fixes Summary
 
 | Issue | Quick Fix |
 |-------|-----------|
 | Workflow not visible | Check Actions enabled + push to main |
 | Secret not found | Add/verify exact secret names in Settings |
 | Auth fails | Refresh cookies and update secrets |
+| **No rewards found (0 rewards)** | **Add CHECKIN_URL variable with full URL including act_id** |
 | Timeout | Check HoYoLAB status, reduce delays |
 | Python wrong version | Ensure all commands use `uv run` |
 | Cron not running | Normal 15-min delay, wait or check syntax |
