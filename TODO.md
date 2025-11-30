@@ -25,10 +25,15 @@
 - [x] Create GitHub Actions workflow file (`.github/workflows/daily-checkin.yml`)
 - [x] Create comprehensive deployment documentation (`docs/DEPLOYMENT.md`)
 - [x] Update README with deployment section and workflow badge
-- [ ] Test workflow in GitHub Actions (requires push to GitHub)
-- [ ] Configure GitHub Secrets for credentials
-- [ ] Run initial dry-run test
-- [ ] Run production test and verify in-game
+- [x] Test workflow in GitHub Actions (requires push to GitHub)
+- [x] Configure GitHub Secrets for credentials
+- [x] Run initial dry-run test
+- [x] Run production test and verify in-game
+- [x] **Document GitHub Actions Secrets vs Variables distinction**
+  - ✅ Sensitive credentials (passwords, tokens) → Secrets tab (encrypted)
+  - ✅ Non-sensitive config (URLs, settings) → Variables tab (plain text)
+  - ✅ Workflow uses `${{ secrets.NAME }}` for Secrets, `${{ vars.NAME }}` for Variables
+  - ✅ Added troubleshooting documentation for missing `act_id` parameter issue
 
 ### Notifications & Monitoring
 - [ ] Implement failure notification system:
@@ -52,6 +57,11 @@
 - [ ] Test stability of navigation-based approach vs direct URL
 
 ### Code Quality & Refactoring
+- [ ] **Consider migrating from flake8 to Ruff**
+  - Ruff is 10-100x faster than flake8
+  - Single tool replaces flake8, isort, and more
+  - Better error messages and modern Python support
+  - Already using `uv` (same ecosystem)
 - [ ] Refactor/shard code files with too many lines:
   - `src/detection/detector.py` (68 violations)
   - `src/automation/orchestrator.py` (16 violations)
@@ -62,6 +72,12 @@
   - Ensure graceful exit after successful reward claiming
   - Handle cleanup when reward is already claimed
   - Implement proper error handling and cleanup on failures
+- [ ] **Fix validation failure causing workflow to report "success: false"**
+  - Logs show reward claimed successfully (`"claiming_success": true`, `claims_processed: 1`)
+  - But validation fails (`"claim_validated": false`, `validation_confidence: 0.36`)
+  - Workflow reports `"success": false` in execution log despite reward being claimed
+  - Issue: Validation logic may be checking wrong page state or timing out too early
+  - Program may not be exiting properly after reward collection
 
 ### Testing Improvements
 - [ ] Create comprehensive end-to-end tests
