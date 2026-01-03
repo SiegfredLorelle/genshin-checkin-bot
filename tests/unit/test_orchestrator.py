@@ -19,7 +19,7 @@ class TestAutomationOrchestrator:
                 "https://hoyolab.com"
             )
             mock_config.return_value.get_hoyolab_credentials.return_value = MagicMock(
-                ltuid="test_ltuid", ltoken="test_ltoken", account_id="test_account"
+                username="test@example.com", password="test_password"
             )
 
             orchestrator = AutomationOrchestrator()
