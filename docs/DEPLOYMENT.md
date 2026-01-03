@@ -5,7 +5,7 @@ This guide walks you through deploying the Genshin Check-in Bot to GitHub Action
 ## 📋 Prerequisites
 
 - GitHub account (free tier is sufficient)
-- Your HoYoLAB credentials (`ltuid` and `ltoken` cookies)
+- Your HoYoLAB username and password
 - Repository pushed to GitHub
 - Completed local testing (POC working)
 
@@ -21,21 +21,7 @@ This guide walks you through deploying the Genshin Check-in Bot to GitHub Action
 
 GitHub Secrets securely store your HoYoLAB credentials.
 
-### 1.1 Choose Your Authentication Method
-
-**Method 1: Username/Password (Recommended - Default)**
-- Easier setup
-- Works with your HoYoLAB login credentials
-- More reliable for long-term use
-
-**Method 2: Cookies (Alternative)**
-- Uses browser cookies
-- May expire every 3-6 months
-- Requires periodic manual updates
-
-### 1.2 Method 1: Username/Password Authentication (Recommended)
-
-This is the **default method** and what your code currently uses.
+### 1.1 Add Your Credentials
 
 1. Go to your repository on GitHub
 2. Click `Settings` (top menu)
@@ -51,37 +37,7 @@ This is the **default method** and what your code currently uses.
 
 ⚠️ **IMPORTANT:** Never commit these values to your repository!
 
-### 1.3 Method 2: Cookie Authentication (Alternative)
-
-If you prefer using cookies instead:
-
-**Step A: Get Your Cookies**
-1. **Login to HoYoLAB:** Visit https://www.hoyolab.com and login
-2. **Open Browser DevTools:** Press `F12` or right-click → Inspect
-3. **Navigate to Storage:**
-   - Chrome/Edge: `Application` tab → `Cookies` → `https://www.hoyolab.com`
-   - Firefox: `Storage` tab → `Cookies` → `https://www.hoyolab.com`
-4. **Copy Cookie Values:**
-   - Find `ltuid` → Copy the Value column
-   - Find `ltoken` → Copy the Value column
-
-**Step B: Add Cookie Secrets**
-1. Go to repository Settings → Secrets and variables → Actions
-2. Add these secrets:
-
-| Secret Name | Value | Example |
-|------------|-------|---------|
-| `HOYOLAB_LTUID` | Your `ltuid` cookie value | `123456789` |
-| `HOYOLAB_LTOKEN` | Your `ltoken` cookie value | `v2_ABCDEF...` |
-
-**Step C: Set Authentication Method**
-1. Same location: Settings → Secrets and variables → Actions
-2. Click `Variables` tab
-3. Add variable:
-   - Name: `AUTH_METHOD`
-   - Value: `cookies`
-
-### 1.4 Optional: Configure Variables
+### 1.2 Optional: Configure Variables
 
 For non-sensitive configuration (optional):
 
@@ -91,7 +47,6 @@ For non-sensitive configuration (optional):
 
 | Variable Name | Default Value | Purpose |
 |--------------|---------------|---------|
-| `AUTH_METHOD` | `login` | Authentication method: `login` or `cookies` |
 | `CHECKIN_URL` | Auto-set | Custom check-in URL |
 | `MIN_DELAY` | `2.0` | Minimum delay between actions (seconds) |
 | `MAX_DELAY` | `8.0` | Maximum delay between actions (seconds) |

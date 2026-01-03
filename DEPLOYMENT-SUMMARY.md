@@ -57,17 +57,12 @@
 - [x] Local POC working and tested
 - [x] GitHub repository exists
 - [ ] Repository pushed to GitHub
-- [ ] HoYoLAB cookies ready
+- [ ] HoYoLAB username and password ready
 
 ### GitHub Configuration
-- [ ] Secrets configured (choose one method):
-  - **Method 1 (Default):** Username/Password
+- [ ] Secrets configured:
     - [ ] `HOYOLAB_USERNAME`
     - [ ] `HOYOLAB_PASSWORD`
-  - **Method 2 (Alternative):** Cookies
-    - [ ] `HOYOLAB_LTUID`
-    - [ ] `HOYOLAB_LTOKEN`
-    - [ ] `AUTH_METHOD` variable set to `cookies`
 - [ ] GitHub Actions enabled
 - [ ] Workflow permissions: Read and write
 
@@ -153,13 +148,8 @@ git push origin main
 1. Go to repository on GitHub
 2. Settings → Secrets and variables → Actions
 3. New repository secret:
-   - **Method 1 (Recommended - Default):** Username/Password
      - `HOYOLAB_USERNAME`: [your email]
      - `HOYOLAB_PASSWORD`: [your password]
-   - **Method 2 (Alternative):** Cookies
-     - `HOYOLAB_LTUID`: [your ltuid cookie]
-     - `HOYOLAB_LTOKEN`: [your ltoken cookie]
-     - Set variable `AUTH_METHOD` = `cookies`
 
 **Enable Actions:**
 1. Settings → Actions → General

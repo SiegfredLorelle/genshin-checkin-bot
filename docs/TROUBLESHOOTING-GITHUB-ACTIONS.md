@@ -51,21 +51,14 @@ cat .github/workflows/daily-checkin.yml | grep -E 'name:|on:|jobs:'
 
 **Symptoms:**
 ```bash
-Error: The secret `HOYOLAB_LTUID` has not been set
+Error: The secret `HOYOLAB_USERNAME` has not been set
 ```
 
 **Solution:**
 1. Go to Settings → Secrets and variables → Actions
-2. Verify secrets exist with **exact names** based on your auth method:
-
-**For Username/Password (default):**
-- `HOYOLAB_USERNAME` (not `username` or `USERNAME`)
-- `HOYOLAB_PASSWORD` (not `password` or `PASSWORD`)
-
-**For Cookies (if AUTH_METHOD=cookies):**
-- `HOYOLAB_LTUID` (not `ltuid` or `LTUID`)
-- `HOYOLAB_LTOKEN` (not `ltoken` or `LTOKEN`)
-
+2. Verify secrets exist with **exact names**:
+   - `HOYOLAB_USERNAME` (not `username` or `USERNAME`)
+   - `HOYOLAB_PASSWORD` (not `password` or `PASSWORD`)
 3. If missing, add them
 4. If present, check for typos in workflow file
 
@@ -78,25 +71,19 @@ Run workflow manually with dry-run mode to verify secrets work.
 ```bash
 Authentication failed
 Invalid credentials
-Cookie expired
 ```
 
 **Solutions:**
 
-**A. Wrong password (most common for login method):**
+**A. Wrong password (most common):**
 1. Verify you can login manually at <https://www.hoyolab.com>
 2. Update `HOYOLAB_PASSWORD` secret in GitHub
 3. Re-run workflow
 
-**B. Expired cookies (if using cookie method):**
-1. Login fresh to <https://www.hoyolab.com>
-2. Get new cookies (F12 → Application → Cookies)
-3. Update `HOYOLAB_LTUID` and `HOYOLAB_LTOKEN` secrets
-4. Re-run workflow
-
-**C. Wrong authentication method:**
-- If using username/password: Ensure `AUTH_METHOD` is `login` (or not set - it's default)
-- If using cookies: Set variable `AUTH_METHOD` = `cookies`
+**B. Account locked/2FA enabled:**
+- Ensure your HoYoLAB account doesn't have 2FA enabled
+- Check if account is locked due to too many login attempts
+- Wait 15-30 minutes and try again
 
 **D. Wrong region:**
 - Check `CHECKIN_URL` matches your region
