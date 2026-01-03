@@ -1,63 +1,146 @@
 # Genshin Impact HoYoLAB Check-in Bot
+> Automated daily check-ins for Genshin Impact HoYoLAB rewards
 
 [![Daily Check-in](https://github.com/SiegfredLorelle/genshin-checkin-bot/actions/workflows/daily-checkin.yml/badge.svg)](https://github.com/SiegfredLorelle/genshin-checkin-bot/actions/workflows/daily-checkin.yml)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-An automated browser-based solution for daily HoYoLAB check-ins with robust error handling and multi-framework support.
+An automated browser-based solution for daily HoYoLAB check-ins using Playwright with robust error handling. Can run locally or be deployed to GitHub Actions for fully automated daily check-ins at 6 AM PhST with zero cost.
 
-🚀 **NEW:** Now deployable to GitHub Actions for fully automated daily check-ins! See [Deployment Guide](docs/DEPLOYMENT.md).
+---
 
-> **⚠️ CRITICAL**: This project **REQUIRES** [`uv`](https://docs.astral.sh/uv/) for dependency management and Python version management. Traditional pip/venv workflows are **NOT SUPPORTED**. All Python commands must be prefixed with `uv run`. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for details.
+## Table of Contents
+
+- [Genshin Impact HoYoLAB Check-in Bot](#genshin-impact-hoyolab-check-in-bot)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Prerequisites](#prerequisites)
+    - [For Native Installation:](#for-native-installation)
+    - [For GitHub Actions Deployment:](#for-github-actions-deployment)
+  - [Configuration](#configuration)
+    - [Environment Setup](#environment-setup)
+  - [Installation](#installation)
+    - [Native Installation](#native-installation)
+      - [1. Install uv Package Manager](#1-install-uv-package-manager)
+      - [2. Install Dependencies](#2-install-dependencies)
+      - [3. Verify Installation](#3-verify-installation)
+    - [GitHub Actions Deployment](#github-actions-deployment)
+      - [Setup Steps:](#setup-steps)
+  - [Usage](#usage)
+    - [Running the Application](#running-the-application)
+      - [Native Execution](#native-execution)
+      - [GitHub Actions Execution](#github-actions-execution)
+  - [Development](#development)
+    - [Project Structure](#project-structure)
+  - [Browser Automation](#browser-automation)
+  - [Troubleshooting](#troubleshooting)
+    - [Common Installation Issues](#common-installation-issues)
+    - [Browser Issues](#browser-issues)
+  - [Project Structure](#project-structure-1)
+  - [Security Considerations](#security-considerations)
+  - [Contributing](#contributing)
 
 ## Features
 
-- **Dual Browser Framework Support**: Playwright (primary) with Selenium WebDriver fallback
+- **Automated Daily Check-ins**: Never miss HoYoLAB rewards with scheduled automation
+- **Playwright Browser Automation**: Reliable and modern web automation with Chromium
 - **Robust Error Handling**: Automatic retry logic and comprehensive failure screenshots
 - **Structured Logging**: JSON-formatted logs with secret redaction for production safety
+- **GitHub Actions Support**: Deploy for automated daily check-ins at 6 AM PhST with zero cost
 - **Educational Focus**: Well-documented code for learning web automation best practices
 
 ## Prerequisites
 
-- **Python 3.11+** - Project is pinned to Python 3.11 via `.python-version`
-- **uv** - **REQUIRED** Python package manager ([Install Guide](https://docs.astral.sh/uv/getting-started/installation/))
-- **Git** for repository management
-- **Chrome/Chromium browser** (automatically managed by Playwright)
+Before you begin, ensure you have the following:
 
-> **📌 Important**: The project uses `.python-version` to pin Python 3.11. Your system `python` command may differ, but `uv run python` will automatically use the correct version. Always use `uv run` for all Python commands.
+### For Native Installation:
+- **Python 3.11+**: Download from [python.org](https://www.python.org/downloads/)
+- **Git**: For cloning the repository
+- **uv**: Python package manager ([Install Guide](https://docs.astral.sh/uv/getting-started/installation/))
 
-## Quick Start
+### For GitHub Actions Deployment:
+- **GitHub Account**: For hosting and running the automation
+- **HoYoLAB Account**: Your game account credentials
 
-### 1. Clone and Setup Environment
+## Configuration
+
+⚠️ **Important**: Complete this configuration step before proceeding with installation.
+
+### Environment Setup
+
+1. **Clone the Repository**
+
+   **Option 1: HTTPS (recommended for most users)**
+   ```bash
+   git clone https://github.com/SiegfredLorelle/genshin-checkin-bot.git
+   cd genshin-checkin-bot
+   ```
+
+   **Option 2: SSH (recommended for developers with SSH keys set up)**
+   ```bash
+   git clone git@github.com:SiegfredLorelle/genshin-checkin-bot.git
+   cd genshin-checkin-bot
+   ```
+
+2. **Create environment configuration:**
+   ```bash
+   cp .env.example .env
+   # Note: `cp` is a UNIX command
+   # On Windows, manually create `.env` file following `.env.example` contents
+   ```
+
+3. **Edit the `.env` file with your configuration:**
+   ```bash
+   nvim .env  # or use your preferred text editor
+   ```
+
+4. **Add your required environment variables:**
+
+   ```env
+   # HoYoLAB Authentication (REQUIRED)
+   HOYOLAB_USERNAME=your_email@example.com
+   HOYOLAB_PASSWORD=your_password_here
+
+   # Automation Configuration (Optional - defaults provided)
+   CHECKIN_URL=https://act.hoyolab.com/ys/event/signin-sea-v3/index.html
+   MIN_DELAY=2.0
+   MAX_DELAY=8.0
+   ```
+
+**⚠️ Security Note**: Never commit `.env` file to git. It's included in `.gitignore` for safety.
+
+## Installation
+
+### Native Installation
+
+⚠️ **Prerequisites**: Ensure you have completed the [Configuration](#configuration) section above before running these commands.
+
+#### 1. Install uv Package Manager
+
+**macOS/Linux:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Windows:**
+```powershell
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+#### 2. Install Dependencies
 
 ```bash
-# Clone repository
-git clone https://github.com/SiegfredLorelle/genshin-checkin-bot.git
-cd genshin-checkin-bot
-
-# Install uv (fast Python package manager) if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
-# or: pip install uv
-
-# Create virtual environment and install all dependencies (one command!)
+# Install all dependencies (automatically creates virtual environment)
 uv sync
 
-# Install Playwright browsers (primary framework)
+# Install Playwright browsers
 uv run playwright install chromium
 ```
 
-### 2. Configure Credentials
+> **📌 Important**: All Python commands must be prefixed with `uv run` (e.g., `uv run python script.py`). This ensures correct Python version (3.11) and dependencies are used.
 
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Edit .env with your HoYoLAB credentials
-# See "Credential Configuration" section below
-```
-
-### 3. Test Installation
+#### 3. Verify Installation
 
 ```bash
 # Verify Python version (should show 3.11.x)
@@ -68,78 +151,84 @@ uv run python scripts/verify_dependencies.py
 
 # Run unit tests
 uv run pytest tests/unit/
-
-# Test browser automation (dry run)
-uv run python -m src.automation.orchestrator --dry-run
 ```
 
-> **⚠️ Common Mistake**: Do NOT run `python script.py` directly. Always use `uv run python script.py` to ensure the correct Python version (3.11) and dependencies are used.
+### GitHub Actions Deployment
 
-## Credential Configuration
+⚠️ **Prerequisites**: Ensure you have a GitHub account and have pushed your repository to GitHub.
 
-### Setting Up Your HoYoLAB Credentials
+Automate daily check-ins at 6 AM PhST using GitHub Actions (free tier):
 
-Simply provide your HoYoLAB username and password in the `.env` file:
-
-```bash
-# HoYoLAB Authentication (REQUIRED)
-HOYOLAB_USERNAME=your_email@example.com
-HOYOLAB_PASSWORD=your_password_here
-```
-
-### Environment File Setup
-
-Edit `.env` file with your credentials:
-
-```bash
-# HoYoLAB Authentication (REQUIRED)
-HOYOLAB_USERNAME=your_email@example.com
-HOYOLAB_PASSWORD=your_password_here
-
-# Automation Configuration (Optional - defaults provided)
-CHECKIN_URL=https://act.hoyolab.com/ys/event/signin-sea-v3/index.html
-MIN_DELAY=2.0
-MAX_DELAY=8.0
-
-# Framework Selection (Optional)
-BROWSER_FRAMEWORK=playwright  # or "selenium"
-```
-
-**⚠️ Security Note**: Never commit `.env` file to git. It's included in `.gitignore` for safety.
-
-## 🚀 Deployment (GitHub Actions)
-
-### Quick Deploy
-
-Want to run this automatically every day at 6 AM PHT? Deploy to GitHub Actions in 5 minutes:
+#### Setup Steps:
 
 1. **Push to GitHub** (if not already)
-2. **Add Secrets**: Settings → Secrets → Actions
-   - `HOYOLAB_USERNAME` = Your HoYoLAB email
-   - `HOYOLAB_PASSWORD` = Your HoYoLAB password
-3. **Enable Actions**: Settings → Actions → General → Allow all actions
-4. **Test Run**: Actions tab → Daily HoYoLAB Check-in → Run workflow (dry-run)
-5. **Done!** Runs automatically daily at 6 AM PHT
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
+
+2. **Add Secrets**:
+   - Navigate to: Repository Settings → Secrets and variables → Actions → New repository secret
+   - Add the following secrets:
+     - `HOYOLAB_USERNAME` = Your HoYoLAB email
+     - `HOYOLAB_PASSWORD` = Your HoYoLAB password
+
+3. **Enable Actions**:
+   - Settings → Actions → General → Allow all actions
+
+4. **Test Run**:
+   - Actions tab → Daily HoYoLAB Check-in → Run workflow → Enable dry-run
+
+5. **Done!** Runs automatically daily at 6 AM PhST
 
 📖 **Full deployment guide with screenshots:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 **Benefits:**
 - ✅ Zero cost (GitHub Actions free tier)
-- ✅ No server management
+- ✅ No server management required
 - ✅ Secure credential storage
-- ✅ Automatic email notifications on failure
 - ✅ 90-day execution logs
 - ✅ Manual trigger button for missed runs
 
-## Development Commands
+## Usage
 
-> **🔴 CRITICAL**: ALL commands below MUST be run with `uv run` prefix. Direct Python execution will use the wrong version and dependencies.
+### Running the Application
+
+#### Native Execution
+
+Test the bot locally with a dry run (no actual check-in):
+
+```bash
+uv run python -m src --dry-run
+```
+
+Run the full check-in automation:
+
+```bash
+uv run python -m src
+# Note: command may be `uv run python3` depending on OS or installation
+```
+
+#### GitHub Actions Execution
+
+After setting up GitHub Actions deployment, the automation runs automatically at 6 AM PhST daily. You can also:
+
+- **Manual Trigger**: Actions tab → Daily HoYoLAB Check-in → Run workflow
+- **View Logs**: Actions tab → Select workflow run → View logs
+- **Check Status**: README badge shows latest run status
+
+## Development
+
+### Project Structure
+
+> **Note**: All commands must use `uv run` prefix to ensure correct Python version and dependencies.
 
 ```bash
 # Code Quality
-uv run black src/ tests/              # Format code
-uv run isort src/ tests/              # Sort imports
-uv run flake8 src/ tests/             # Lint code
+uv run ruff format src/ tests/        # Format code
+uv run ruff check src/ tests/         # Lint code
+uv run ruff check --fix src/ tests/   # Lint and auto-fix
 uv run mypy src/                      # Type checking
 
 # Testing
@@ -148,173 +237,139 @@ uv run pytest tests/integration/      # Integration tests only
 uv run pytest tests/ --cov=src        # All tests with coverage
 
 # Local Testing
-uv run python -m src.automation.orchestrator          # Full execution
-uv run python -m src.automation.orchestrator --dry-run # Test without actions
+uv run python -m src                  # Full execution
+uv run python -m src --dry-run        # Test without actions
 
 # Dependency Management
 uv add package-name                   # Add new package
 uv add --dev package-name             # Add dev dependency
 uv lock --upgrade                     # Update lock file
 uv sync                               # Sync dependencies after pulling changes
-
-# Python Version Management
-uv python list                        # List available Python versions
-uv python install 3.11                # Install Python 3.11 if needed
-uv python pin 3.11                    # Pin project to Python 3.11 (updates .python-version)
 ```
 
-## Browser Framework Selection
+[&#9650; Back to Top](#genshin-impact-hoyolab-check-in-bot)
 
-### Playwright (Primary - Recommended)
+---
 
-**Advantages:**
+## Browser Automation
+
+This project uses **Playwright** for browser automation, providing reliable and modern web automation capabilities.
+
+**Key Features:**
 - Superior reliability and stability
 - Built-in async support
 - Advanced waiting strategies
 - Excellent debugging tools
-- Better GitHub Actions integration
+- Optimized for GitHub Actions integration
 
-**Requirements:**
+**Browser Installation:**
 ```bash
-playwright install chromium
+uv run playwright install chromium
 ```
 
-### Selenium WebDriver (Fallback)
+[&#9650; Back to Top](#genshin-impact-hoyolab-check-in-bot)
 
-**When to Use:**
-- Playwright installation issues
-- Platform compatibility requirements
-- Familiar with Selenium ecosystem
-
-**Requirements:**
-```bash
-# ChromeDriver auto-managed by selenium-manager in v4.15+
-# No manual installation needed
-```
-
-### Framework Switching
-
-The system automatically falls back to Selenium if Playwright fails. Manual switching:
-
-```bash
-# Set in .env file
-BROWSER_FRAMEWORK=selenium
-
-# Or via command line (MUST use uv run)
-uv run python -m src.automation.orchestrator --framework selenium
-```
+---
 
 ## Troubleshooting
 
 ### Common Installation Issues
 
-**Playwright Browser Installation Fails:**
-```bash
-# Try manual installation
-npx playwright install chromium
+- **Playwright Browser Installation Fails:**
 
-# Or switch to Selenium fallback
-echo "BROWSER_FRAMEWORK=selenium" >> .env
-```
+  ```bash
+  # Try manual installation with dependencies
+  uv run playwright install chromium --with-deps
 
-**Import Errors:**
-```bash
-# Verify uv environment
-uv run python --version  # Should show correct Python version
+  # Or install system dependencies separately (Linux)
+  uv run playwright install-deps
+  ```
 
-# Reinstall dependencies
-uv sync --reinstall
+- **Import Errors:**
 
-# Clear cache and reinstall
-rm -rf .venv/
-uv sync
-```
+  ```bash
+  # Verify uv environment
+  uv run python --version  # Should show correct Python version
 
-**Permission Issues (macOS/Linux):**
-```bash
-# Fix Python permissions
-chmod +x venv/bin/python
+  # Reinstall dependencies
+  uv sync --reinstall
 
-# Fix Playwright permissions
-chmod +x venv/bin/playwright
-```
+  # Clear cache and reinstall
+  rm -rf .venv/
+  uv sync
+  ```
 
 ### Browser Issues
 
-**Chromium Won't Launch:**
-- Ensure adequate disk space (>1GB for Playwright browsers)
-- Check firewall settings aren't blocking browser
-- Try headless mode: `HEADLESS=true` in `.env`
+- **Chromium Won't Launch:**
+  - Ensure adequate disk space (>1GB for Playwright browsers)
+  - Check firewall settings aren't blocking browser
+  - Try headless mode: `HEADLESS=true` in `.env`
 
-**Element Detection Fails:**
-- Check HoYoLAB UI hasn't changed
-- Verify credentials are still valid
-- Review logs in `logs/debug/` directory
+- **Element Detection Fails:**
+  - Check HoYoLAB UI hasn't changed
+  - Verify credentials are still valid
+  - Review logs in `logs/` directory
 
-### Dependency Conflicts
+[&#9650; Back to Top](#genshin-impact-hoyolab-check-in-bot)
 
-**Version Conflicts:**
-```bash
-# Clean install with uv
-rm -rf .venv/
-uv sync --reinstall
-
-# Update lock file and reinstall
-uv lock --upgrade
-uv sync
-```
-
-**Platform-Specific Issues:**
-- **Windows**: Use `venv\Scripts\activate` instead of `source venv/bin/activate`
-- **macOS**: May need Xcode command line tools: `xcode-select --install`
-- **Linux**: Install browser dependencies: `playwright install-deps`
+---
 
 ## Project Structure
 
 ```
 genshin-checkin-bot/
-├── src/                        # Core automation code
-│   ├── automation/            # Main automation logic
-│   ├── browser/               # Browser framework abstraction
-│   ├── detection/             # Reward detection logic
-│   ├── config/                # Configuration management
-│   ├── state/                 # State and analytics
-│   └── utils/                 # Shared utilities
-├── tests/                     # Test suite
-│   ├── unit/                  # Unit tests
-│   ├── integration/           # Integration tests
-│   └── fixtures/              # Test data
-├── logs/                      # Execution logs and screenshots
-├── scripts/                   # Setup and maintenance scripts
-└── docs/                      # Documentation
+├── src/                       # Core automation code
+│   ├── automation/           # Main automation logic
+│   ├── browser/              # Browser framework abstraction
+│   ├── detection/            # Reward detection logic
+│   ├── config/               # Configuration management
+│   ├── state/                # State and analytics
+│   └── utils/                # Shared utilities
+├── tests/                    # Test suite
+│   ├── unit/                 # Unit tests
+│   ├── integration/          # Integration tests
+│   └── e2e/                  # End-to-end tests
+├── logs/                     # Execution logs and screenshots
+├── scripts/                  # Setup and maintenance scripts
+└── docs/                     # Documentation
 ```
+
+[&#9650; Back to Top](#genshin-impact-hoyolab-check-in-bot)
+
+---
 
 ## Security Considerations
 
 - **Never commit credentials** to version control
 - **Use environment variables** for all sensitive configuration
 - **Enable log redaction** to prevent credential exposure
-- **Regularly rotate tokens** if compromised
+- **Regularly rotate credentials** if compromised
+- **GitHub Secrets**: Store credentials as repository secrets, not in workflow files
 
 ## Contributing
 
-1. **Set up commit message template** (recommended):
-   ```bash
-   git config commit.template .gitmessage
-   ```
-2. **Install pre-commit hooks**:
-   ```bash
-   uv run pre-commit install
-   uv run pre-commit install --hook-type commit-msg
-   ```
-3. Follow code style: `ruff` for formatting and linting
+Contributions are welcome! Please follow these guidelines:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Follow code style: Use `ruff` for formatting and linting
 4. Follow [Conventional Commits](https://www.conventionalcommits.org/) format for commit messages
 5. Add tests for new features
-6. Update documentation for API changes
-7. Ensure all tests pass: `pytest tests/`
+6. Ensure all tests pass: `uv run pytest tests/`
+7. Update documentation for changes
+8. Submit a pull request
 
-See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for detailed development setup and [.github/COMMIT_CONVENTION.md](.github/COMMIT_CONVENTION.md) for commit message guidelines.
+**Setup pre-commit hooks** (recommended):
+```bash
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+```
 
-## License
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for detailed development setup.
 
-MIT License - see LICENSE file for details.
+---
+
+For more questions, contact:
+- **GitHub:** https://github.com/SiegfredLorelle
+- **Repository:** https://github.com/SiegfredLorelle/genshin-checkin-bot

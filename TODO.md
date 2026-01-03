@@ -8,9 +8,9 @@
 ## 🎯 High Priority Tasks
 
 ### Epic/Story Evaluation
-- [ ] Review which epic/stories are still needed considering our current working POC
-- [ ] Identify gaps between POC and production requirements
-- [ ] Prioritize remaining stories based on production readiness needs
+- [X] Review which epic/stories are still needed considering our current working POC
+- [X] Identify gaps between POC and production requirements
+- [X] Prioritize remaining stories based on production readiness needs
 
 ### Deployment & Infrastructure
 - [x] Research deployment options for cron scheduling:
@@ -44,10 +44,10 @@
 - [ ] Configure alert thresholds and conditions
 
 ### Authentication Review
-- [ ] Investigate if cookies are still required for auth
-- [ ] Test if login-only approach (without cookies) is sufficient
-- [ ] Document auth flow simplification if possible
-- [ ] Update authentication implementation based on findings
+- [X] Investigate if cookies are still required for auth
+- [X] Test if login-only approach (without cookies) is sufficient
+- [X] Document auth flow simplification if possible
+- [X] Update authentication implementation based on findings
 
 ### Navigation Flow Improvements
 - [ ] Start from HoYoLAB official page rather than direct check-in URL
@@ -57,7 +57,7 @@
 - [ ] Test stability of navigation-based approach vs direct URL
 
 ### Code Quality & Refactoring
-- [ ] **Consider migrating from flake8 to Ruff**
+- [X] **Consider migrating from flake8 to Ruff**
   - Ruff is 10-100x faster than flake8
   - Single tool replaces flake8, isort, and more
   - Better error messages and modern Python support
@@ -111,10 +111,10 @@
 - [ ] Test effectiveness against bot detection systems
 
 ### Framework Consolidation
-- [ ] Evaluate if both Playwright and Selenium are still needed
-- [ ] Test production reliability with single framework
-- [ ] Make recommendation to keep one or both
-- [ ] Update implementation and remove unnecessary code if consolidating
+- [X] Evaluate if both Playwright and Selenium are still needed
+- [X] Test production reliability with single framework
+- [X] Make recommendation to keep one or both
+- [x] Update implementation and remove unnecessary code if consolidating
 
 ### Documentation Updates
 - [ ] Update architecture docs based on current POC implementation
