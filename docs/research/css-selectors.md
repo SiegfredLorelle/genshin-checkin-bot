@@ -1,7 +1,7 @@
 # CSS Selector Discovery Research
 
-**Story:** 1.1 - HoYoLAB Feasibility Validation  
-**Research Focus:** Reward detection element identification  
+**Story:** 1.1 - HoYoLAB Feasibility Validation
+**Research Focus:** Reward detection element identification
 **Date:** September 29, 2025
 
 ## Objective
@@ -24,7 +24,7 @@ Based on `architecture/api-specification.md#reward-state-detection`:
 ```
 **Purpose:** Data attribute-based button identification
 
-### Fallback Selector 2  
+### Fallback Selector 2
 ```css
 .sign-in-btn:not(.disabled)
 ```
@@ -46,7 +46,7 @@ Based on `architecture/api-specification.md#reward-state-detection`:
 ### Selector Stability Testing
 *Test selectors across different reward states:*
 - [ ] Reward available state
-- [ ] Reward already claimed state  
+- [ ] Reward already claimed state
 - [ ] Different days of the month
 - [ ] Calendar month transitions
 

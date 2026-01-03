@@ -1,7 +1,7 @@
 # Network Request Analysis Research
 
-**Story:** 1.1 - HoYoLAB Feasibility Validation  
-**Research Focus:** Authentication and API endpoint analysis  
+**Story:** 1.1 - HoYoLAB Feasibility Validation
+**Research Focus:** Authentication and API endpoint analysis
 **Date:** September 29, 2025
 
 ## Objective
@@ -63,7 +63,7 @@ Response: [capture response format]
 
 #### Reward Claiming Action
 ```http
-POST [endpoint to be discovered]  
+POST [endpoint to be discovered]
 Headers: [to be documented]
 Body: [capture request body if any]
 Response: [capture response format]
@@ -78,7 +78,7 @@ Response: [capture response format]
   "expected": "request structure"
 }
 
-// Response format (to be captured)  
+// Response format (to be captured)
 {
   "expected": "response structure"
 }
@@ -118,7 +118,7 @@ Response: [capture response format]
 *To be completed after manual network analysis*
 
 ### Authentication Complexity: [LOW/MEDIUM/HIGH]
-### API Stability: [STABLE/MODERATE/UNSTABLE]  
+### API Stability: [STABLE/MODERATE/UNSTABLE]
 ### Automation Risk: [LOW/MEDIUM/HIGH]
 
 ## Recommendations

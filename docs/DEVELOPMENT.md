@@ -60,9 +60,7 @@ uv run pre-commit install --hook-type commit-msg
 - YAML syntax validation
 - Large file detection
 - Merge conflict markers
-- Code formatting (black)
-- Import sorting (isort)
-- Code linting (flake8)
+- Code formatting and linting (ruff)
 
 **On commit message:**
 - Conventional Commits format validation
@@ -120,8 +118,24 @@ uv run pre-commit run
 uv run pre-commit run --all-files
 
 # Run specific hook
-uv run pre-commit run black --all-files
+uv run pre-commit run ruff --all-files
 uv run pre-commit run commitlint --hook-stage commit-msg --commit-msg-filename .git/COMMIT_EDITMSG
+```
+
+### Manual Code Quality Checks
+
+```bash
+# Run ruff linter with auto-fix
+uv run ruff check src/ --fix
+
+# Run ruff formatter
+uv run ruff format src/
+
+# Run both check and format
+uv run ruff check src/ --fix && uv run ruff format src/
+
+# Check for issues without fixing
+uv run ruff check src/
 ```
 
 ### Skipping Hooks (Use Sparingly)

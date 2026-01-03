@@ -95,7 +95,7 @@ playwright_config = {
 # Recommended Selenium settings for HoYoLAB
 selenium_options = [
     "--headless",
-    "--no-sandbox", 
+    "--no-sandbox",
     "--disable-dev-shm-usage",
     "--disable-blink-features=AutomationControlled",
     "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
@@ -195,7 +195,7 @@ Solution:
 Track the following metrics for each framework:
 
 - Initialization success rate (target: >95%)
-- Authentication success rate (target: >90%) 
+- Authentication success rate (target: >90%)
 - Element detection success rate (target: >85%)
 - Overall workflow success rate (target: >80%)
 

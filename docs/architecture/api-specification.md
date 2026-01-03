@@ -20,9 +20,9 @@ Based on the architectural analysis and tech stack selection, this project opera
 
 **Reward State Detection:**
 - **Interface Type:** DOM element inspection
-- **Detection Selectors:** 
+- **Detection Selectors:**
   - Primary: `.calendar-container .today-sign` (current day indicator)
-  - Fallback 1: `[data-testid="check-in-button"]` 
+  - Fallback 1: `[data-testid="check-in-button"]`
   - Fallback 2: `.sign-in-btn:not(.disabled)`
 - **Response Analysis:** Element presence and CSS classes determine reward availability
 
@@ -47,7 +47,7 @@ USER_AGENT="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)..."
 
 # Timing Configuration (seconds)
 MIN_DELAY=2.0                       # Minimum wait between actions
-MAX_DELAY=8.0                       # Maximum wait between actions  
+MAX_DELAY=8.0                       # Maximum wait between actions
 PAGE_LOAD_TIMEOUT=30.0              # Maximum page load wait time
 ELEMENT_TIMEOUT=15.0                # Maximum element detection wait time
 
