@@ -77,14 +77,15 @@ uv run python -m src.automation.orchestrator --dry-run
 
 ## Credential Configuration
 
-### Finding Your HoYoLAB Credentials
+### Setting Up Your HoYoLAB Credentials
 
-1. **Login to HoYoLAB**: Visit https://www.hoyolab.com and login
-2. **Open Browser DevTools**: F12 or right-click → Inspect
-3. **Go to Application/Storage Tab**: Find Cookies section
-4. **Locate Cookies for hoyolab.com**:
-   - `ltuid` → Use as `HOYOLAB_LTUID`
-   - `ltoken` → Use as `HOYOLAB_LTOKEN`
+Simply provide your HoYoLAB username and password in the `.env` file:
+
+```bash
+# HoYoLAB Authentication (REQUIRED)
+HOYOLAB_USERNAME=your_email@example.com
+HOYOLAB_PASSWORD=your_password_here
+```
 
 ### Environment File Setup
 
@@ -92,8 +93,8 @@ Edit `.env` file with your credentials:
 
 ```bash
 # HoYoLAB Authentication (REQUIRED)
-HOYOLAB_LTUID=your_ltuid_here
-HOYOLAB_LTOKEN=your_ltoken_here
+HOYOLAB_USERNAME=your_email@example.com
+HOYOLAB_PASSWORD=your_password_here
 
 # Automation Configuration (Optional - defaults provided)
 CHECKIN_URL=https://act.hoyolab.com/ys/event/signin-sea-v3/index.html
@@ -114,8 +115,8 @@ Want to run this automatically every day at 6 AM PHT? Deploy to GitHub Actions i
 
 1. **Push to GitHub** (if not already)
 2. **Add Secrets**: Settings → Secrets → Actions
-   - `HOYOLAB_LTUID` = Your ltuid cookie
-   - `HOYOLAB_LTOKEN` = Your ltoken cookie
+   - `HOYOLAB_USERNAME` = Your HoYoLAB email
+   - `HOYOLAB_PASSWORD` = Your HoYoLAB password
 3. **Enable Actions**: Settings → Actions → General → Allow all actions
 4. **Test Run**: Actions tab → Daily HoYoLAB Check-in → Run workflow (dry-run)
 5. **Done!** Runs automatically daily at 6 AM PHT

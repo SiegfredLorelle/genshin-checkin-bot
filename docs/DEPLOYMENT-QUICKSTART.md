@@ -7,7 +7,7 @@
 - [ ] GitHub account
 - [ ] Repository pushed to GitHub
 - [ ] Local POC tested and working
-- [ ] HoYoLAB cookies ready (`ltuid` and `ltoken`)
+- [ ] HoYoLAB username and password ready
 
 ## 5-Minute Setup
 
@@ -22,11 +22,6 @@ You have your HoYoLAB login credentials ready (email + password).
 3. Add two secrets:
    - Name: `HOYOLAB_USERNAME` | Value: [your email]
    - Name: `HOYOLAB_PASSWORD` | Value: [your password]
-
-**Alternative (Cookie method):** If you prefer cookies instead of login:
-1. Login to [HoYoLab](https://www.hoyolab.com) → F12 → Cookies → Get `ltuid` and `ltoken`
-2. Add secrets: `HOYOLAB_LTUID` and `HOYOLAB_LTOKEN`
-3. Add variable: `AUTH_METHOD` = `cookies`
 
 ### Step 3: Enable Actions (30 sec)
 

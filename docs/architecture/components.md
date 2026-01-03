@@ -13,12 +13,10 @@ Based on the architectural patterns, tech stack, and data models from above, the
 - `cleanup()` - Resource cleanup with async context manager support
 
 **Authentication Methods:**
-- **Username/Password Login** (Default/Recommended): Automated email/password form submission
-- **Cookie-Based Authentication**: Direct ltuid/ltoken cookie injection
-- Both methods support validation and error recovery
+- **Username/Password Login**: Automated email/password form submission through login form
 
 **Implementation Features:**
-- Dual authentication method support (username/password + cookies)
+- Username/password authentication method
 - Dry-run mode for testing without actual claiming
 - Modal/popup blocking detection and automatic closing
 - Red point detection strategy for reward identification
@@ -95,10 +93,7 @@ Based on the architectural patterns, tech stack, and data models from above, the
 - `redact_secrets()` - Secret redaction for safe logging
 
 **Authentication Configuration:**
-- Supports `AUTH_METHOD` environment variable ("login" or "cookies")
-- **Login method**: Requires `HOYOLAB_USERNAME` and `HOYOLAB_PASSWORD`
-- **Cookie method**: Requires `HOYOLAB_LTUID` and `HOYOLAB_LTOKEN`
-- Optional `HOYOLAB_ACCOUNT_ID` for additional context
+- Uses username/password authentication via `HOYOLAB_USERNAME` and `HOYOLAB_PASSWORD`
 
 **Configuration Features:**
 - Environment variable validation with clear error messages
