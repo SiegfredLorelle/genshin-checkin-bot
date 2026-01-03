@@ -139,3 +139,29 @@ class PlaywrightBrowserManager(BrowserManagerInterface):
             return True
         except Exception:
             return False
+
+    async def click_element(self, selector: str, timeout: int = 10000) -> bool:
+        """Click element by CSS selector.
+
+        Args:
+            selector: CSS selector string
+            timeout: Timeout in milliseconds
+
+        Returns:
+            True if element was clicked successfully, False otherwise
+        """
+        if not self.page:
+            raise RuntimeError("Browser not initialized")
+
+        try:
+            await self.page.click(selector, timeout=timeout)
+            logger.debug("Element clicked successfully", selector=selector[:50])
+            return True
+        except Exception as e:
+            logger.warning(
+                "Failed to click element",
+                selector=selector[:50],
+                error=str(e),
+                error_type=type(e).__name__,
+            )
+            return False
