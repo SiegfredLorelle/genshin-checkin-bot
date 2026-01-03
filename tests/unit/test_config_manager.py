@@ -41,34 +41,33 @@ class TestConfigurationManager:
         """Test getting credentials from environment variables."""
         with patch("src.config.manager.config") as mock_config:
             mock_config.side_effect = lambda key, default=None: {
-                "HOYOLAB_LTUID": "env_ltuid",
-                "HOYOLAB_LTOKEN": "env_ltoken",
-                "HOYOLAB_ACCOUNT_ID": "env_account",
+                "HOYOLAB_USERNAME": "test@example.com",
+                "HOYOLAB_PASSWORD": "test_password",
             }.get(key, default)
 
             credentials = config_manager.get_hoyolab_credentials()
 
-            assert credentials.ltuid == "env_ltuid"
-            assert credentials.ltoken == "env_ltoken"
-            assert credentials.account_id == "env_account"
+            assert credentials.username == "test@example.com"
+            assert credentials.password == "test_password"
 
-    def test_get_hoyolab_credentials_fallback_hardcoded(self, config_manager):
-        """Test fallback to hardcoded credentials for MVP."""
-        with patch("decouple.config") as mock_config:
+    def test_get_hoyolab_credentials_missing(self, config_manager):
+        """Test error when credentials are missing."""
+        with patch("src.config.manager.config") as mock_config:
             mock_config.return_value = None
 
-            credentials = config_manager.get_hoyolab_credentials()
+            with pytest.raises(ConfigurationError) as exc_info:
+                config_manager.get_hoyolab_credentials()
 
-            assert credentials.ltuid == "YOUR_LTUID_HERE"
-            assert credentials.ltoken == "YOUR_LTOKEN_HERE"
+            assert "HOYOLAB_USERNAME and HOYOLAB_PASSWORD are required" in str(
+                exc_info.value
+            )
 
     def test_get_hoyolab_credentials_cached(self, config_manager):
         """Test that credentials are cached after first load."""
         with patch("src.config.manager.config") as mock_config:
             mock_config.side_effect = lambda key, default=None: {
-                "HOYOLAB_LTUID": "cached_ltuid",
-                "HOYOLAB_LTOKEN": "cached_ltoken",
-                "HOYOLAB_ACCOUNT_ID": "cached_account",
+                "HOYOLAB_USERNAME": "cached@example.com",
+                "HOYOLAB_PASSWORD": "cached_password",
             }.get(key, default)
 
             # First call should load credentials
@@ -78,7 +77,7 @@ class TestConfigurationManager:
 
             # Should return same cached instance
             assert credentials1 is credentials2 is credentials3
-            assert credentials1.ltuid == "cached_ltuid"
+            assert credentials1.username == "cached@example.com"
 
     def test_get_browser_config_defaults(self, config_manager):
         """Test getting browser configuration with defaults."""
@@ -134,8 +133,6 @@ class TestConfigurationManager:
         data = {
             "username": "testuser",
             "password": "secret123",
-            "ltuid": "user123456",
-            "ltoken": "token_abc123xyz",
             "normal_field": "normal_value",
             "api_key": "key_secret",
             "short_secret": "abc",
@@ -145,10 +142,6 @@ class TestConfigurationManager:
 
         assert redacted["username"] == "testuser"  # Not a secret pattern
         assert "***REDACTED***" in redacted["password"]
-        assert redacted["ltuid"].startswith("user")
-        assert "***REDACTED***" in redacted["ltuid"]
-        assert redacted["ltoken"].startswith("toke")
-        assert "***REDACTED***" in redacted["ltoken"]
         assert redacted["normal_field"] == "normal_value"
         assert redacted["api_key"] == "key_***REDACTED***"
         assert redacted["short_secret"] == "***REDACTED***"
@@ -186,17 +179,8 @@ class TestHoYoLABCredentials:
     def test_credentials_creation(self):
         """Test creating credentials object."""
         credentials = HoYoLABCredentials(
-            ltuid="test_ltuid", ltoken="test_ltoken", account_id="test_account"
+            username="test@example.com", password="test_password"
         )
 
-        assert credentials.ltuid == "test_ltuid"
-        assert credentials.ltoken == "test_ltoken"
-        assert credentials.account_id == "test_account"
-
-    def test_credentials_optional_account_id(self):
-        """Test creating credentials without account_id."""
-        credentials = HoYoLABCredentials(ltuid="test_ltuid", ltoken="test_ltoken")
-
-        assert credentials.ltuid == "test_ltuid"
-        assert credentials.ltoken == "test_ltoken"
-        assert credentials.account_id is None
+        assert credentials.username == "test@example.com"
+        assert credentials.password == "test_password"
