@@ -28,7 +28,7 @@ Monitoring strategy provides visibility into automation health while maintaining
 python -m src.state.analytics dashboard --days=30
 # Output:
 # Success Rate (30 days): 73.3% (22/30 executions)
-# Average Duration: 45.2 seconds  
+# Average Duration: 45.2 seconds
 # Most Effective Selector: primary (80% success rate)
 # Recent Failures: 2 (timeout), 1 (element not found)
 ```

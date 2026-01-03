@@ -6,7 +6,7 @@ Security and performance considerations are critical for reliable automation whi
 
 **Backend Security:**
 - Input Validation: All environment variables validated on startup with type checking and range validation
-- Rate Limiting: Respectful automation with randomized delays (2-8 seconds) between actions  
+- Rate Limiting: Respectful automation with randomized delays (2-8 seconds) between actions
 - CORS Policy: N/A - No web API endpoints exposed
 
 **Authentication Security:**

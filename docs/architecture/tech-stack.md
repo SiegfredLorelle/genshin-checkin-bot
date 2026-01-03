@@ -15,9 +15,7 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 | Browser Testing | pytest-playwright | ^0.4.0 | Browser automation testing | Seamless Playwright integration, async test support |
 | Assertion Library | pytest (built-in) | ^7.4.0 | Test assertions and validation | Comprehensive assertion methods, clear error messages |
 | Mocking Framework | pytest-mock | ^3.11.0 | Test isolation and mocking | Clean mock syntax, pytest integration, reduces external dependencies |
-| Code Formatting | black | ^23.7.0 | Consistent code style | Opinionated formatting, educational readability, industry adoption |
-| Import Sorting | isort | ^5.12.0 | Import organization | Clean import structure, black compatibility |
-| Linting | flake8 | ^6.0.0 | Code quality enforcement | Catches common errors, educational best practices |
+| Code Formatting & Linting | ruff | ^0.8.0 | Unified code quality tool | 10-100x faster than traditional tools, auto-fix capabilities, replaces black/isort/flake8 |
 | Type Checking | mypy | ^1.5.0 | Static type analysis | Type safety, better IDE support, documentation through types |
 | Package Manager | uv | Latest | Fast Python package and project manager | 10-100x faster than pip, built in Rust, modern tooling, lock files for reproducibility |
 | Dependency Management | pyproject.toml + uv.lock | PEP 621 | Dependency specification and locking | Modern Python standard, single source of truth, exact reproducibility across environments |

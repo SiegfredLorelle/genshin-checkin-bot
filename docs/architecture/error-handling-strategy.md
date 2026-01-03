@@ -15,7 +15,7 @@ sequenceDiagram
     Component->>ErrorHandler: Exception raised
     ErrorHandler->>Logger: Log error with context
     ErrorHandler->>StateManager: Record failure
-    
+
     alt Retryable error
         ErrorHandler->>ErrorHandler: Apply backoff delay
         ErrorHandler->>Component: Retry operation
@@ -36,7 +36,7 @@ class AutomationError:
     timestamp: str
     execution_id: str
     retryable: bool
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "error": {
@@ -59,10 +59,10 @@ class AutomationErrorHandler:
         self.state_manager = state_manager
         self.retry_attempts = 0
         self.max_retries = 3
-    
+
     def handle_error(self, error: Exception, context: Dict[str, Any]) -> AutomationResult:
         """Central error handling with retry logic and state management"""
-        
+
         error_info = AutomationError(
             error_type=type(error).__name__,
             message=str(error),
@@ -71,7 +71,7 @@ class AutomationErrorHandler:
             execution_id=context.get('execution_id'),
             retryable=self._is_retryable_error(error)
         )
-        
+
         # Log error with structured context
         self.logger.error(
             "Automation error occurred",
@@ -81,7 +81,7 @@ class AutomationErrorHandler:
             retry_attempt=self.retry_attempts,
             **error_info.details
         )
-        
+
         # Record failure in state management
         self.state_manager.log_execution(
             ExecutionLog(
@@ -93,7 +93,7 @@ class AutomationErrorHandler:
                 selector_used=context.get('selector_used', 'unknown')
             )
         )
-        
+
         # Retry logic for transient errors
         if error_info.retryable and self.retry_attempts < self.max_retries:
             self.retry_attempts += 1
@@ -101,19 +101,19 @@ class AutomationErrorHandler:
             self.logger.info(f"Retrying in {delay} seconds...", retry_attempt=self.retry_attempts)
             time.sleep(delay)
             return None  # Signal retry needed
-        
+
         # Final failure - no more retries
         return AutomationResult(
             success=False,
             error=error_info,
             completed=True
         )
-    
+
     def _is_retryable_error(self, error: Exception) -> bool:
         """Determine if error is worth retrying"""
         retryable_types = (
             TimeoutError,
-            ConnectionError, 
+            ConnectionError,
             BrowserDisconnectedError,
             TemporaryElementNotFoundError
         )

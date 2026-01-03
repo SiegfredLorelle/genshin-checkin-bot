@@ -5,7 +5,7 @@ Establish project infrastructure, local development environment, and demonstrate
 
 **Key Risks:** HoYoLAB interface complexity, browser automation setup challenges, immediate anti-bot detection
 
-## Epic 2: **Core Automation Engine**  
+## Epic 2: **Core Automation Engine**
 Build reliable reward detection and claiming logic with comprehensive error handling, state tracking, and user validation of core assumptions.
 
 **Key Risks:** CSS selector stability, reward detection accuracy, finding qualified test users

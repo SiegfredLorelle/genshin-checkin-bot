@@ -307,7 +307,7 @@ genshin-checkin-bot/
    uv run pre-commit install
    uv run pre-commit install --hook-type commit-msg
    ```
-3. Follow code style: `black` formatting, `isort` imports, `flake8` linting
+3. Follow code style: `ruff` for formatting and linting
 4. Follow [Conventional Commits](https://www.conventionalcommits.org/) format for commit messages
 5. Add tests for new features
 6. Update documentation for API changes
