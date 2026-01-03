@@ -331,7 +331,9 @@ class RewardDetector:
         return indicators
 
     async def claim_available_rewards(
-        self, browser: BrowserManagerInterface, detection_result: dict[str, Any] = None
+        self,
+        browser: BrowserManagerInterface,
+        detection_result: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Automated reward claiming with confirmation dialog handling and
         timing delays.
@@ -613,7 +615,9 @@ class RewardDetector:
         return confirmation_result
 
     async def validate_claim_success(
-        self, browser: BrowserManagerInterface, pre_claim_state: dict[str, Any] = None
+        self,
+        browser: BrowserManagerInterface,
+        pre_claim_state: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Validate successful reward claiming through UI feedback and state changes.
 
@@ -976,7 +980,7 @@ class RewardDetector:
         self,
         browser: BrowserManagerInterface,
         error: Exception,
-        context: dict[str, Any] = None,
+        context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Enhanced error handling for reward claiming operations.
 

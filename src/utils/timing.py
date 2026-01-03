@@ -23,7 +23,9 @@ class TimingUtils:
         """
         self.base_variance = max(0.0, min(1.0, base_variance))
 
-    async def human_delay(self, base_ms: int | float, variance: float = None) -> None:
+    async def human_delay(
+        self, base_ms: int | float, variance: float | None = None
+    ) -> None:
         """Add human-like delay with randomization.
 
         Args:

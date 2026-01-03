@@ -24,7 +24,7 @@ sequenceDiagram
 
     AO->>BM: authenticate_session()
     BM->>CM: get_credentials()
-    BM->>HL: Login with cookies
+    BM->>HL: Authenticate with username/password
     HL-->>BM: Authentication success
 
     AO->>BM: navigate_to_checkin()

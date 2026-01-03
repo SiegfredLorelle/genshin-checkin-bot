@@ -269,7 +269,7 @@ requires-dist = [
     { name = "pytest-mock", marker = "extra == 'test'", specifier = ">=3.11.0,<4.0.0" },
     { name = "pytest-playwright", marker = "extra == 'test'", specifier = ">=0.4.0,<1.0.0" },
     { name = "python-decouple", specifier = ">=3.8,<4.0.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0,<1.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.14.10,<1.0.0" },
     { name = "structlog", specifier = ">=23.1.0,<24.0.0" },
 ]
 provides-extras = ["test", "dev"]
@@ -277,7 +277,7 @@ provides-extras = ["test", "dev"]
 [package.metadata.requires-dev]
 dev = [
     { name = "pre-commit", specifier = ">=3.8.0" },
-    { name = "ruff", specifier = ">=0.14.10" },
+    { name = "ruff", specifier = ">=0.14.10,<1.0.0" },
 ]
 
 [[package]]

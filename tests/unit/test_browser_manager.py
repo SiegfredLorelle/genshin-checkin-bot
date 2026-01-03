@@ -64,11 +64,12 @@ class TestBrowserManager:
     @pytest.mark.asyncio
     async def test_initialize_playwright_fallback_to_selenium(self):
         """Test automatic fallback from Playwright to Selenium on ImportError."""
-        with patch(
-            "src.browser.playwright_impl.PlaywrightBrowserManager"
-        ) as mock_playwright, patch(
-            "src.browser.selenium_impl.SeleniumBrowserManager"
-        ) as mock_selenium:
+        with (
+            patch(
+                "src.browser.playwright_impl.PlaywrightBrowserManager"
+            ) as mock_playwright,
+            patch("src.browser.selenium_impl.SeleniumBrowserManager") as mock_selenium,
+        ):
             # Playwright fails with ImportError
             mock_playwright.side_effect = ImportError("Playwright not available")
 
@@ -150,6 +151,12 @@ class MockBrowserImplementation(BrowserManagerInterface):
 
     async def wait_for_element(self, selector: str, timeout: int = 10000) -> bool:
         """Wait for element to be present and visible."""
+        return True  # Mock always succeeds
+
+    async def click_element(self, selector: str, timeout: int = 10000) -> bool:
+        """Click element by CSS selector."""
+        if not self.launched:
+            raise RuntimeError("Browser not initialized")
         return True  # Mock always succeeds
 
 

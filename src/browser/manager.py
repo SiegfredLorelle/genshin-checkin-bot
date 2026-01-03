@@ -81,6 +81,19 @@ class BrowserManagerInterface(ABC):
         """
         pass
 
+    @abstractmethod
+    async def click_element(self, selector: str, timeout: int = 10000) -> bool:
+        """Click element by CSS selector.
+
+        Args:
+            selector: CSS selector string
+            timeout: Timeout in milliseconds
+
+        Returns:
+            True if element was clicked successfully, False otherwise
+        """
+        pass
+
 
 class BrowserManager:
     """Main browser manager for Playwright automation."""
