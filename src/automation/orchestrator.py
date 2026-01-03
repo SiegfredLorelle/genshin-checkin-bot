@@ -5,7 +5,7 @@ through interface analysis with proper error handling and state logging.
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import structlog
 
@@ -21,7 +21,7 @@ logger = structlog.get_logger(__name__)
 class AutomationOrchestrator:
     """Main orchestrator for browser automation workflow."""
 
-    def __init__(self, config_manager: Optional[ConfigurationManager] = None):
+    def __init__(self, config_manager: ConfigurationManager | None = None):
         """Initialize automation orchestrator.
 
         Args:
@@ -61,9 +61,9 @@ class AutomationOrchestrator:
         except Exception as e:
             logger.error("Failed to initialize orchestrator", error=str(e))
             await self.cleanup()
-            raise AutomationError(f"Orchestrator initialization failed: {e}")
+            raise AutomationError(f"Orchestrator initialization failed: {e}") from e
 
-    async def execute_checkin(self, dry_run: bool = False) -> Dict[str, Any]:
+    async def execute_checkin(self, dry_run: bool = False) -> dict[str, Any]:
         """Execute complete check-in workflow from authentication through
         reward claiming.
 
@@ -199,7 +199,7 @@ class AutomationOrchestrator:
 
             raise AutomationError(
                 f"Check-in workflow failed at {workflow_result['step_completed']}: {e}"
-            )
+            ) from e
 
         finally:
             # Ensure cleanup always happens
@@ -210,7 +210,7 @@ class AutomationOrchestrator:
                 logger.error("Cleanup failed", error=str(cleanup_error))
                 workflow_result["cleanup_completed"] = False
 
-    async def execute_workflow(self) -> Dict[str, Any]:
+    async def execute_workflow(self) -> dict[str, Any]:
         """Execute complete automation workflow.
 
         Returns:
@@ -289,11 +289,11 @@ class AutomationOrchestrator:
 
             raise AutomationError(
                 f"Workflow failed at {workflow_result['step_completed']}: {error_msg}"
-            )
+            ) from e
 
     async def _handle_workflow_error(
-        self, error: Exception, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, error: Exception, context: dict[str, Any]
+    ) -> dict[str, Any]:
         """Handle workflow errors with context-aware recovery strategies.
 
         Args:
@@ -336,13 +336,13 @@ class AutomationOrchestrator:
 
         except Exception as handling_error:
             logger.error("Error handling failed", error=str(handling_error))
-            error_handling_result[
-                "error_message"
-            ] += f" | Handling failed: {handling_error}"
+            error_handling_result["error_message"] += (
+                f" | Handling failed: {handling_error}"
+            )
 
         return error_handling_result
 
-    async def _log_execution_result(self, workflow_result: Dict[str, Any]) -> None:
+    async def _log_execution_result(self, workflow_result: dict[str, Any]) -> None:
         """Log comprehensive execution results to state manager.
 
         Args:
@@ -457,7 +457,7 @@ class AutomationOrchestrator:
             logger.error("Authentication failed", error=str(e))
             return False
 
-    async def _detect_rewards_with_red_point(self) -> Dict[str, Any]:
+    async def _detect_rewards_with_red_point(self) -> dict[str, Any]:
         """Detect claimable rewards by looking for the red point indicator.
 
         The red point indicator shows which reward is available to claim today.
@@ -483,10 +483,7 @@ class AutomationOrchestrator:
             # <span class="components-home-assets-__sign-content-test_---
             # red-point---2jUBf9"></span>
             red_point_selectors = [
-                (
-                    ".components-home-assets-__sign-content-test_---"
-                    "red-point---2jUBf9"
-                ),
+                (".components-home-assets-__sign-content-test_---red-point---2jUBf9"),
                 "span[class*='red-point']",
                 ".red-point",
             ]
@@ -546,7 +543,7 @@ class AutomationOrchestrator:
                     if found:
                         claimable_element = selector
                         logger.info(
-                            "✓ Found clickable reward element: " f"{selector[:60]}..."
+                            f"✓ Found clickable reward element: {selector[:60]}..."
                         )
                         break
                 except Exception as e:
@@ -583,8 +580,8 @@ class AutomationOrchestrator:
             return detection_result
 
     async def _claim_reward_with_red_point(
-        self, detection_result: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, detection_result: dict[str, Any]
+    ) -> dict[str, Any]:
         """Claim reward by clicking the element with red point indicator.
 
         Args:
@@ -613,7 +610,7 @@ class AutomationOrchestrator:
             selector = reward.get("selector")
 
             logger.info(
-                "🎯 Attempting to click reward with selector: " f"{selector[:80]}..."
+                f"🎯 Attempting to click reward with selector: {selector[:80]}..."
             )
 
             # Wait a moment before clicking
@@ -637,7 +634,9 @@ class AutomationOrchestrator:
                 )
 
             except Exception as click_error:
-                logger.error("❌ Failed to click reward element", error=str(click_error))
+                logger.error(
+                    "❌ Failed to click reward element", error=str(click_error)
+                )
                 claiming_result["failed_claims"].append(
                     {
                         "selector": selector,
@@ -695,7 +694,7 @@ class AutomationOrchestrator:
                         await self.browser_impl.page.click(selector)
                         closed_count += 1
                         logger.info(
-                            "✓ Closed modal using selector: " f"{selector[:60]}..."
+                            f"✓ Closed modal using selector: {selector[:60]}..."
                         )
 
                         # Wait a moment after closing for animations
@@ -712,7 +711,7 @@ class AutomationOrchestrator:
                 logger.info(f"✓ Successfully closed {closed_count} modal(s)")
             else:
                 logger.info(
-                    "ℹ No blocking modals found " "(this is normal if already closed)"
+                    "ℹ No blocking modals found (this is normal if already closed)"
                 )
 
         except Exception as e:
@@ -975,7 +974,7 @@ class AutomationOrchestrator:
             logger.error("Authentication validation failed", error=str(e))
             return False
 
-    async def _analyze_interface(self) -> Dict[str, Any]:
+    async def _analyze_interface(self) -> dict[str, Any]:
         """Analyze interface for reward detection.
 
         Returns:
@@ -1010,8 +1009,8 @@ class AutomationOrchestrator:
             return {"error": str(e), "selectors": [], "detection_confidence": 0.0}
 
     async def _generate_interface_report(
-        self, analysis_result: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, analysis_result: dict[str, Any]
+    ) -> dict[str, Any]:
         """Generate detailed interface analysis report.
 
         Args:
@@ -1105,7 +1104,7 @@ class AutomationOrchestrator:
 
         return report
 
-    async def _capture_debug_screenshot(self, prefix: str = "debug") -> Optional[str]:
+    async def _capture_debug_screenshot(self, prefix: str = "debug") -> str | None:
         """Capture screenshot for debugging.
 
         Args:

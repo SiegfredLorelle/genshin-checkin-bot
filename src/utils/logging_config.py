@@ -10,7 +10,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 import structlog
 
@@ -62,7 +62,7 @@ def configure_logging(
         Path(log_dir).mkdir(exist_ok=True)
 
     # Configure structlog processors
-    processors: List[Any] = [
+    processors: list[Any] = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="ISO", utc=True),
@@ -87,7 +87,9 @@ def configure_logging(
     # Configure structlog
     structlog.configure(
         processors=processors,
-        wrapper_class=structlog.make_filtering_bound_logger(getattr(logging, log_level.upper())),
+        wrapper_class=structlog.make_filtering_bound_logger(
+            getattr(logging, log_level.upper())
+        ),
         logger_factory=structlog.WriteLoggerFactory(),
         cache_logger_on_first_use=True,
     )

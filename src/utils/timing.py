@@ -6,7 +6,6 @@ and simulate natural human interaction patterns.
 
 import asyncio
 import random
-from typing import Union
 
 import structlog
 
@@ -24,7 +23,7 @@ class TimingUtils:
         """
         self.base_variance = max(0.0, min(1.0, base_variance))
 
-    async def human_delay(self, base_ms: Union[int, float], variance: float = None) -> None:
+    async def human_delay(self, base_ms: int | float, variance: float = None) -> None:
         """Add human-like delay with randomization.
 
         Args:
@@ -89,7 +88,7 @@ class TimingUtils:
         """
         intervals = []
 
-        for i in range(text_length):
+        for _ in range(text_length):
             # Base typing speed: 150-300ms per character
             base_interval = random.randint(150, 300)
 
@@ -130,7 +129,7 @@ timing = TimingUtils()
 
 
 # Convenience functions
-async def human_delay(base_ms: Union[int, float], variance: float = 0.3) -> None:
+async def human_delay(base_ms: int | float, variance: float = 0.3) -> None:
     """Convenience function for human-like delay."""
     await timing.human_delay(base_ms, variance)
 

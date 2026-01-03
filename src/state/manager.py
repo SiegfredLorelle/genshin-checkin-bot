@@ -6,9 +6,9 @@ and persistent state tracking for automation workflow analysis.
 
 import asyncio
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import structlog
 
@@ -38,12 +38,16 @@ class StateManager:
             # Create history file if it doesn't exist
             if not self.history_file.exists():
                 self.history_file.touch()
-                logger.info("Created execution history file", path=str(self.history_file))
+                logger.info(
+                    "Created execution history file", path=str(self.history_file)
+                )
 
             logger.info("State manager initialized successfully")
 
         except Exception as e:
-            raise StateManagementError(f"Failed to initialize state manager: {e}")
+            raise StateManagementError(
+                f"Failed to initialize state manager: {e}"
+            ) from e
 
     def get_current_timestamp(self) -> str:
         """Get current UTC timestamp in ISO format.
@@ -51,9 +55,9 @@ class StateManager:
         Returns:
             ISO format timestamp string
         """
-        return datetime.now(timezone.utc).isoformat()
+        return datetime.now(UTC).isoformat()
 
-    async def log_execution_result(self, result: Dict[str, Any]) -> None:
+    async def log_execution_result(self, result: dict[str, Any]) -> None:
         """Log execution result to history file.
 
         Args:
@@ -79,9 +83,13 @@ class StateManager:
                 )
 
             except Exception as e:
-                raise StateManagementError(f"Failed to log execution result: {e}")
+                raise StateManagementError(
+                    f"Failed to log execution result: {e}"
+                ) from e
 
-    async def get_execution_history(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    async def get_execution_history(
+        self, limit: int | None = None
+    ) -> list[dict[str, Any]]:
         """Get execution history from log file.
 
         Args:
@@ -99,7 +107,7 @@ class StateManager:
                     return []
 
                 history = []
-                with open(self.history_file, "r", encoding="utf-8") as f:
+                with open(self.history_file, encoding="utf-8") as f:
                     for line in f:
                         line = line.strip()
                         if line:
@@ -118,9 +126,11 @@ class StateManager:
                 return history
 
             except Exception as e:
-                raise StateManagementError(f"Failed to read execution history: {e}")
+                raise StateManagementError(
+                    f"Failed to read execution history: {e}"
+                ) from e
 
-    async def calculate_success_rate(self, days: int = 7) -> Dict[str, Any]:
+    async def calculate_success_rate(self, days: int = 7) -> dict[str, Any]:
         """Calculate success rate over specified period.
 
         Args:
@@ -142,21 +152,25 @@ class StateManager:
                 }
 
             # Filter by date range
-            cutoff_date = datetime.now(timezone.utc).replace(
+            cutoff_date = datetime.now(UTC).replace(
                 hour=0, minute=0, second=0, microsecond=0
             ) - timedelta(days=days)
 
             filtered_history = []
             for record in history:
                 try:
-                    record_date = datetime.fromisoformat(record["timestamp"].replace("Z", "+00:00"))
+                    record_date = datetime.fromisoformat(
+                        record["timestamp"].replace("Z", "+00:00")
+                    )
                     if record_date >= cutoff_date:
                         filtered_history.append(record)
                 except (KeyError, ValueError):
                     continue
 
             total = len(filtered_history)
-            successful = sum(1 for record in filtered_history if record.get("success", False))
+            successful = sum(
+                1 for record in filtered_history if record.get("success", False)
+            )
 
             success_rate = (successful / total * 100) if total > 0 else 0.0
 
@@ -172,9 +186,9 @@ class StateManager:
             return stats
 
         except Exception as e:
-            raise StateManagementError(f"Failed to calculate success rate: {e}")
+            raise StateManagementError(f"Failed to calculate success rate: {e}") from e
 
-    async def get_last_execution_result(self) -> Optional[Dict[str, Any]]:
+    async def get_last_execution_result(self) -> dict[str, Any] | None:
         """Get the most recent execution result.
 
         Returns:
@@ -202,7 +216,7 @@ class StateManager:
                     return
 
                 # Filter to keep only recent entries
-                cutoff_date = datetime.now(timezone.utc) - timedelta(days=keep_days)
+                cutoff_date = datetime.now(UTC) - timedelta(days=keep_days)
 
                 filtered_history = []
                 for record in history:
@@ -217,7 +231,9 @@ class StateManager:
 
                 # Rewrite file with filtered history
                 with open(self.history_file, "w", encoding="utf-8") as f:
-                    for record in reversed(filtered_history):  # Maintain chronological order
+                    for record in reversed(
+                        filtered_history
+                    ):  # Maintain chronological order
                         f.write(json.dumps(record) + "\n")
 
                 removed_count = len(history) - len(filtered_history)

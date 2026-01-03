@@ -5,7 +5,7 @@ for finding HoYoLAB interface elements and fallback mechanisms.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import structlog
 
@@ -26,7 +26,7 @@ class SelectorStrategy(ABC):
         self.name = name
 
     @abstractmethod
-    async def detect_elements(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def detect_elements(self, browser: BrowserManagerInterface) -> dict[str, Any]:
         """Detect elements using this strategy.
 
         Args:
@@ -37,7 +37,9 @@ class SelectorStrategy(ABC):
         """
         pass
 
-    async def analyze_reward_states(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def analyze_reward_states(
+        self, browser: BrowserManagerInterface
+    ) -> dict[str, Any]:
         """Analyze reward states with enhanced differentiation logic.
 
         Args:
@@ -55,7 +57,7 @@ class SelectorStrategy(ABC):
 
     async def get_selector_for_target(
         self, browser: BrowserManagerInterface, target_type: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """Get specific selector for target type (optional implementation).
 
         Args:
@@ -87,7 +89,7 @@ class HoYoLABClassBasedStrategy(SelectorStrategy):
             "claim_button": [".claim-btn", ".receive-btn", ".get-reward"],
         }
 
-    async def detect_elements(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def detect_elements(self, browser: BrowserManagerInterface) -> dict[str, Any]:
         """Detect elements using HoYoLAB-specific CSS classes."""
         result = {
             "selectors": [],
@@ -122,7 +124,9 @@ class HoYoLABClassBasedStrategy(SelectorStrategy):
                             found_any = True
 
                     except Exception as e:
-                        logger.debug("Selector test failed", selector=selector, error=str(e))
+                        logger.debug(
+                            "Selector test failed", selector=selector, error=str(e)
+                        )
                         continue
 
             # Adjust confidence based on findings
@@ -143,7 +147,9 @@ class HoYoLABClassBasedStrategy(SelectorStrategy):
 
         return result
 
-    async def analyze_reward_states(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def analyze_reward_states(
+        self, browser: BrowserManagerInterface
+    ) -> dict[str, Any]:
         """Enhanced reward state analysis using HoYoLAB-specific patterns."""
         states = {
             "claimable_rewards": [],
@@ -166,7 +172,11 @@ class HoYoLABClassBasedStrategy(SelectorStrategy):
                     found = await browser.find_element(selector, timeout=2000)
                     if found:
                         states["claimable_rewards"].append(
-                            {"selector": selector, "state": "claimable", "confidence": 0.9}
+                            {
+                                "selector": selector,
+                                "state": "claimable",
+                                "confidence": 0.9,
+                            }
                         )
                 except Exception:
                     continue
@@ -184,7 +194,11 @@ class HoYoLABClassBasedStrategy(SelectorStrategy):
                     found = await browser.find_element(selector, timeout=2000)
                     if found:
                         states["claimed_rewards"].append(
-                            {"selector": selector, "state": "claimed", "confidence": 0.9}
+                            {
+                                "selector": selector,
+                                "state": "claimed",
+                                "confidence": 0.9,
+                            }
                         )
                 except Exception:
                     continue
@@ -202,7 +216,11 @@ class HoYoLABClassBasedStrategy(SelectorStrategy):
                     found = await browser.find_element(selector, timeout=2000)
                     if found:
                         states["unavailable_rewards"].append(
-                            {"selector": selector, "state": "unavailable", "confidence": 0.8}
+                            {
+                                "selector": selector,
+                                "state": "unavailable",
+                                "confidence": 0.8,
+                            }
                         )
                 except Exception:
                     continue
@@ -221,7 +239,7 @@ class HoYoLABClassBasedStrategy(SelectorStrategy):
 
     async def get_selector_for_target(
         self, browser: BrowserManagerInterface, target_type: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """Get selector for specific target type."""
         if target_type in self.selectors:
             # Return first selector for the target type
@@ -250,7 +268,7 @@ class AttributeBasedStrategy(SelectorStrategy):
             ],
         }
 
-    async def detect_elements(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def detect_elements(self, browser: BrowserManagerInterface) -> dict[str, Any]:
         """Detect elements using data attributes and ARIA labels."""
         result = {
             "selectors": [],
@@ -309,7 +327,7 @@ class TextContentStrategy(SelectorStrategy):
             ],
         }
 
-    async def detect_elements(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def detect_elements(self, browser: BrowserManagerInterface) -> dict[str, Any]:
         """Detect elements using text content patterns."""
         result = {
             "selectors": [],
@@ -344,7 +362,9 @@ class TextContentStrategy(SelectorStrategy):
 
             logger.info(
                 "Text content detection completed",
-                patterns_tested=sum(len(patterns) for patterns in self.text_patterns.values()),
+                patterns_tested=sum(
+                    len(patterns) for patterns in self.text_patterns.values()
+                ),
             )
 
         except Exception as e:
@@ -371,7 +391,7 @@ class GenericFallbackStrategy(SelectorStrategy):
             "[role='button']",
         ]
 
-    async def detect_elements(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def detect_elements(self, browser: BrowserManagerInterface) -> dict[str, Any]:
         """Detect elements using generic UI patterns."""
         result = {
             "selectors": [],
@@ -417,7 +437,7 @@ class SelectorStrategyFactory:
             GenericFallbackStrategy(),
         ]
 
-    def get_all_strategies(self) -> List[SelectorStrategy]:
+    def get_all_strategies(self) -> list[SelectorStrategy]:
         """Get all available strategies ordered by priority.
 
         Returns:
@@ -425,7 +445,7 @@ class SelectorStrategyFactory:
         """
         return self.strategies
 
-    def get_strategy_by_name(self, name: str) -> Optional[SelectorStrategy]:
+    def get_strategy_by_name(self, name: str) -> SelectorStrategy | None:
         """Get strategy by name.
 
         Args:

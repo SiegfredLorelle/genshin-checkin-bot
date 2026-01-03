@@ -5,7 +5,8 @@ and fallback mechanisms for robust interface interaction.
 """
 
 import asyncio
-from typing import Any, Dict, List, Optional
+from datetime import UTC
+from typing import Any
 
 import structlog
 
@@ -21,7 +22,7 @@ class RewardDetector:
 
     def __init__(self):
         """Initialize reward detector."""
-        self.strategies: List[SelectorStrategy] = []
+        self.strategies: list[SelectorStrategy] = []
         self.strategy_factory = SelectorStrategyFactory()
 
     async def initialize(self) -> None:
@@ -30,12 +31,16 @@ class RewardDetector:
             # Load all available detection strategies
             self.strategies = self.strategy_factory.get_all_strategies()
 
-            logger.info("Reward detector initialized", strategy_count=len(self.strategies))
+            logger.info(
+                "Reward detector initialized", strategy_count=len(self.strategies)
+            )
 
         except Exception as e:
-            raise DetectionError(f"Failed to initialize reward detector: {e}")
+            raise DetectionError(f"Failed to initialize reward detector: {e}") from e
 
-    async def detect_reward_availability(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def detect_reward_availability(
+        self, browser: BrowserManagerInterface
+    ) -> dict[str, Any]:
         """Enhanced reward detection with state differentiation and confidence scoring.
 
         Args:
@@ -64,7 +69,9 @@ class RewardDetector:
 
             # Run interface analysis first
             interface_analysis = await self.analyze_interface(browser)
-            detection_result["strategies_used"] = interface_analysis.get("primary_strategy", [])
+            detection_result["strategies_used"] = interface_analysis.get(
+                "primary_strategy", []
+            )
             detection_result["fallback_strategies"] = interface_analysis.get(
                 "fallback_strategies", []
             )
@@ -93,9 +100,9 @@ class RewardDetector:
             )
 
             # Set timestamp
-            from datetime import datetime, timezone
+            from datetime import datetime
 
-            detection_result["timestamp"] = datetime.now(timezone.utc).isoformat()
+            detection_result["timestamp"] = datetime.now(UTC).isoformat()
 
             logger.info(
                 "Reward availability detection completed",
@@ -108,11 +115,11 @@ class RewardDetector:
 
         except Exception as e:
             logger.error("Reward availability detection failed", error=str(e))
-            raise DetectionError(f"Reward availability detection failed: {e}")
+            raise DetectionError(f"Reward availability detection failed: {e}") from e
 
     async def _detect_reward_states_with_confidence(
-        self, browser: BrowserManagerInterface, interface_analysis: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, browser: BrowserManagerInterface, interface_analysis: dict[str, Any]
+    ) -> dict[str, Any]:
         """Detect reward states with confidence scoring and fallback strategies.
 
         Args:
@@ -134,10 +141,16 @@ class RewardDetector:
             # Use primary strategy for state detection
             primary_strategy_name = interface_analysis.get("primary_strategy")
             if primary_strategy_name:
-                primary_strategy = self.strategy_factory.get_strategy_by_name(primary_strategy_name)
+                primary_strategy = self.strategy_factory.get_strategy_by_name(
+                    primary_strategy_name
+                )
 
-                if primary_strategy and hasattr(primary_strategy, "analyze_reward_states"):
-                    primary_states = await primary_strategy.analyze_reward_states(browser)
+                if primary_strategy and hasattr(
+                    primary_strategy, "analyze_reward_states"
+                ):
+                    primary_states = await primary_strategy.analyze_reward_states(
+                        browser
+                    )
                     state_result.update(primary_states)
                     state_result["detection_confidence"] = interface_analysis.get(
                         "detection_confidence", 0.5
@@ -146,10 +159,14 @@ class RewardDetector:
             # Fallback strategy implementation
             if state_result["detection_confidence"] < 0.6:
                 logger.info("Using fallback strategies for reward state detection")
-                await self._apply_fallback_detection(browser, state_result, interface_analysis)
+                await self._apply_fallback_detection(
+                    browser, state_result, interface_analysis
+                )
 
             # Validate and score confidence based on multiple factors
-            state_result["detection_confidence"] = self._calculate_confidence_score(state_result)
+            state_result["detection_confidence"] = self._calculate_confidence_score(
+                state_result
+            )
 
             # Add detailed state analysis
             state_result["state_analysis"] = await self._analyze_state_indicators(
@@ -166,8 +183,8 @@ class RewardDetector:
     async def _apply_fallback_detection(
         self,
         browser: BrowserManagerInterface,
-        state_result: Dict[str, Any],
-        interface_analysis: Dict[str, Any],
+        state_result: dict[str, Any],
+        interface_analysis: dict[str, Any],
     ) -> None:
         """Apply fallback detection strategies for improved reliability.
 
@@ -179,7 +196,9 @@ class RewardDetector:
         try:
             fallback_strategies = interface_analysis.get("fallback_strategies", [])
 
-            for strategy_name in fallback_strategies[:2]:  # Limit to 2 fallback attempts
+            for strategy_name in fallback_strategies[
+                :2
+            ]:  # Limit to 2 fallback attempts
                 try:
                     strategy = self.strategy_factory.get_strategy_by_name(strategy_name)
                     if strategy and hasattr(strategy, "analyze_reward_states"):
@@ -188,17 +207,21 @@ class RewardDetector:
                         # Merge results with existing state_result
                         self._merge_detection_results(state_result, fallback_states)
 
-                        logger.debug("Applied fallback strategy", strategy=strategy_name)
+                        logger.debug(
+                            "Applied fallback strategy", strategy=strategy_name
+                        )
 
                 except Exception as e:
-                    logger.debug("Fallback strategy failed", strategy=strategy_name, error=str(e))
+                    logger.debug(
+                        "Fallback strategy failed", strategy=strategy_name, error=str(e)
+                    )
                     continue
 
         except Exception as e:
             logger.error("Fallback detection application failed", error=str(e))
 
     def _merge_detection_results(
-        self, primary_result: Dict[str, Any], fallback_result: Dict[str, Any]
+        self, primary_result: dict[str, Any], fallback_result: dict[str, Any]
     ) -> None:
         """Merge detection results from fallback strategies.
 
@@ -213,7 +236,8 @@ class RewardDetector:
                     existing_items = primary_result.get(key, [])
                     new_items = fallback_result[key]
 
-                    # Simple duplicate avoidance (can be enhanced with selector comparison)
+                    # Simple duplicate avoidance
+                    # (can be enhanced with selector comparison)
                     for item in new_items:
                         if item not in existing_items:
                             existing_items.append(item)
@@ -223,7 +247,7 @@ class RewardDetector:
         except Exception as e:
             logger.debug("Result merging failed", error=str(e))
 
-    def _calculate_confidence_score(self, state_result: Dict[str, Any]) -> float:
+    def _calculate_confidence_score(self, state_result: dict[str, Any]) -> float:
         """Calculate confidence score based on detection results.
 
         Args:
@@ -253,8 +277,8 @@ class RewardDetector:
             return 0.0
 
     async def _analyze_state_indicators(
-        self, browser: BrowserManagerInterface, state_result: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, browser: BrowserManagerInterface, state_result: dict[str, Any]
+    ) -> dict[str, Any]:
         """Analyze visual indicators and DOM attributes for state validation.
 
         Args:
@@ -307,9 +331,10 @@ class RewardDetector:
         return indicators
 
     async def claim_available_rewards(
-        self, browser: BrowserManagerInterface, detection_result: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
-        """Automated reward claiming with confirmation dialog handling and timing delays.
+        self, browser: BrowserManagerInterface, detection_result: dict[str, Any] = None
+    ) -> dict[str, Any]:
+        """Automated reward claiming with confirmation dialog handling and
+        timing delays.
 
         Args:
             browser: Browser implementation instance
@@ -342,7 +367,9 @@ class RewardDetector:
             claimable_rewards = detection_result.get("claimable_rewards", [])
             if not claimable_rewards:
                 logger.info("No claimable rewards found")
-                claiming_result["success"] = True  # No rewards to claim is still success
+                claiming_result["success"] = (
+                    True  # No rewards to claim is still success
+                )
                 return claiming_result
 
             # Import timing utilities
@@ -355,14 +382,18 @@ class RewardDetector:
             # Process each claimable reward
             for i, reward in enumerate(claimable_rewards):
                 try:
-                    logger.info(f"Processing reward {i+1}/{len(claimable_rewards)}")
+                    logger.info(f"Processing reward {i + 1}/{len(claimable_rewards)}")
 
                     # Apply human-like delay between claims
                     if i > 0:
-                        await timing.human_delay(2000, variance=0.4)  # 2s base with variance
+                        await timing.human_delay(
+                            2000, variance=0.4
+                        )  # 2s base with variance
 
                     # Attempt to claim the reward
-                    claim_success = await self._claim_single_reward(browser, reward, timing)
+                    claim_success = await self._claim_single_reward(
+                        browser, reward, timing
+                    )
 
                     if claim_success["success"]:
                         claiming_result["successful_claims"].append(
@@ -383,7 +414,7 @@ class RewardDetector:
                         )
 
                 except Exception as e:
-                    logger.error(f"Error claiming reward {i+1}", error=str(e))
+                    logger.error(f"Error claiming reward {i + 1}", error=str(e))
                     claiming_result["failed_claims"].append(
                         {"reward": reward, "attempt_number": i + 1, "error": str(e)}
                     )
@@ -393,9 +424,9 @@ class RewardDetector:
             claiming_result["success"] = claiming_result["claims_processed"] > 0
 
             # Set timestamp
-            from datetime import datetime, timezone
+            from datetime import datetime
 
-            claiming_result["timestamp"] = datetime.now(timezone.utc).isoformat()
+            claiming_result["timestamp"] = datetime.now(UTC).isoformat()
 
             logger.info(
                 "Reward claiming completed",
@@ -409,11 +440,11 @@ class RewardDetector:
         except Exception as e:
             logger.error("Reward claiming operation failed", error=str(e))
             claiming_result["error_details"].append(str(e))
-            raise DetectionError(f"Reward claiming failed: {e}")
+            raise DetectionError(f"Reward claiming failed: {e}") from e
 
     async def _claim_single_reward(
-        self, browser: BrowserManagerInterface, reward: Dict[str, Any], timing: Any
-    ) -> Dict[str, Any]:
+        self, browser: BrowserManagerInterface, reward: dict[str, Any], timing: Any
+    ) -> dict[str, Any]:
         """Claim a single reward with proper timing and confirmation handling.
 
         Args:
@@ -448,12 +479,15 @@ class RewardDetector:
                     await timing.human_delay(800, variance=0.3)
 
                     # Click the reward element
-                    click_success = await browser.click_element(reward_selector, timeout=5000)
+                    click_success = await browser.click_element(
+                        reward_selector, timeout=5000
+                    )
 
                     if click_success:
                         claim_result["clicked"] = True
                         logger.debug(
-                            "Reward element clicked successfully", selector=reward_selector[:30]
+                            "Reward element clicked successfully",
+                            selector=reward_selector[:30],
                         )
                         break
                     else:
@@ -469,9 +503,9 @@ class RewardDetector:
                         error=str(e),
                     )
                     if attempt == max_retries - 1:
-                        claim_result[
-                            "error"
-                        ] = f"Failed to click reward after {max_retries} attempts: {e}"
+                        claim_result["error"] = (
+                            f"Failed to click reward after {max_retries} attempts: {e}"
+                        )
                         return claim_result
 
                 # Small delay before retry
@@ -480,7 +514,9 @@ class RewardDetector:
 
             # Handle confirmation dialog if click succeeded
             if claim_result["clicked"]:
-                confirmation_success = await self._handle_confirmation_dialog(browser, timing)
+                confirmation_success = await self._handle_confirmation_dialog(
+                    browser, timing
+                )
                 claim_result["confirmed"] = confirmation_success["confirmed"]
 
                 if confirmation_success["error"]:
@@ -502,7 +538,7 @@ class RewardDetector:
 
     async def _handle_confirmation_dialog(
         self, browser: BrowserManagerInterface, timing: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Handle confirmation dialogs that may appear after clicking rewards.
 
         Args:
@@ -540,11 +576,15 @@ class RewardDetector:
                     found = await browser.find_element(selector, timeout=2000)
                     if found:
                         confirmation_result["dialog_found"] = True
-                        logger.debug("Confirmation dialog detected", selector=selector[:30])
+                        logger.debug(
+                            "Confirmation dialog detected", selector=selector[:30]
+                        )
 
                         # Click confirmation button
                         await timing.human_delay(500, variance=0.2)
-                        click_success = await browser.click_element(selector, timeout=3000)
+                        click_success = await browser.click_element(
+                            selector, timeout=3000
+                        )
 
                         if click_success:
                             confirmation_result["confirmed"] = True
@@ -555,7 +595,9 @@ class RewardDetector:
 
                 except Exception as e:
                     logger.debug(
-                        "Confirmation selector test failed", selector=selector[:30], error=str(e)
+                        "Confirmation selector test failed",
+                        selector=selector[:30],
+                        error=str(e),
                     )
                     continue
 
@@ -571,8 +613,8 @@ class RewardDetector:
         return confirmation_result
 
     async def validate_claim_success(
-        self, browser: BrowserManagerInterface, pre_claim_state: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        self, browser: BrowserManagerInterface, pre_claim_state: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """Validate successful reward claiming through UI feedback and state changes.
 
         Args:
@@ -604,7 +646,9 @@ class RewardDetector:
 
             # Detect state changes if pre-claim state provided
             if pre_claim_state:
-                state_changes = await self._detect_state_changes(browser, pre_claim_state)
+                state_changes = await self._detect_state_changes(
+                    browser, pre_claim_state
+                )
                 validation_result["state_changes_detected"] = state_changes["changes"]
 
             # Look for success indicators
@@ -612,12 +656,14 @@ class RewardDetector:
             validation_result["success_indicators"] = success_indicators["indicators"]
 
             # Calculate validation confidence
-            validation_result["validation_confidence"] = self._calculate_validation_confidence(
-                validation_result
+            validation_result["validation_confidence"] = (
+                self._calculate_validation_confidence(validation_result)
             )
 
             # Determine overall validation result
-            validation_result["claim_validated"] = validation_result["validation_confidence"] > 0.6
+            validation_result["claim_validated"] = (
+                validation_result["validation_confidence"] > 0.6
+            )
 
             # Capture screenshot for verification if successful
             if validation_result["claim_validated"]:
@@ -625,9 +671,9 @@ class RewardDetector:
                 validation_result["screenshot_captured"] = screenshot_success
 
             # Set timestamp
-            from datetime import datetime, timezone
+            from datetime import datetime
 
-            validation_result["timestamp"] = datetime.now(timezone.utc).isoformat()
+            validation_result["timestamp"] = datetime.now(UTC).isoformat()
 
             logger.info(
                 "Claim success validation completed",
@@ -639,9 +685,11 @@ class RewardDetector:
 
         except Exception as e:
             logger.error("Claim success validation failed", error=str(e))
-            raise DetectionError(f"Claim validation failed: {e}")
+            raise DetectionError(f"Claim validation failed: {e}") from e
 
-    async def _detect_ui_success_feedback(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def _detect_ui_success_feedback(
+        self, browser: BrowserManagerInterface
+    ) -> dict[str, Any]:
         """Detect UI feedback elements indicating successful reward claiming.
 
         Args:
@@ -685,7 +733,11 @@ class RewardDetector:
                     found = await browser.find_element(selector, timeout=3000)
                     if found:
                         feedback_result["feedback_elements"].append(
-                            {"type": "visual_element", "selector": selector, "confidence": 0.9}
+                            {
+                                "type": "visual_element",
+                                "selector": selector,
+                                "confidence": 0.9,
+                            }
                         )
                         logger.debug("Success UI element found", selector=selector)
                 except Exception:
@@ -698,7 +750,11 @@ class RewardDetector:
                     found = await browser.find_element(text_selector, timeout=2000)
                     if found:
                         feedback_result["feedback_elements"].append(
-                            {"type": "text_content", "pattern": pattern, "confidence": 0.7}
+                            {
+                                "type": "text_content",
+                                "pattern": pattern,
+                                "confidence": 0.7,
+                            }
                         )
                         logger.debug("Success text pattern found", pattern=pattern)
                 except Exception:
@@ -707,7 +763,8 @@ class RewardDetector:
             # Calculate feedback confidence
             if feedback_result["feedback_elements"]:
                 avg_confidence = sum(
-                    elem.get("confidence", 0.5) for elem in feedback_result["feedback_elements"]
+                    elem.get("confidence", 0.5)
+                    for elem in feedback_result["feedback_elements"]
                 ) / len(feedback_result["feedback_elements"])
                 feedback_result["feedback_confidence"] = min(1.0, avg_confidence)
 
@@ -717,8 +774,8 @@ class RewardDetector:
         return feedback_result
 
     async def _detect_state_changes(
-        self, browser: BrowserManagerInterface, pre_claim_state: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, browser: BrowserManagerInterface, pre_claim_state: dict[str, Any]
+    ) -> dict[str, Any]:
         """Detect state changes by comparing current state with pre-claim state.
 
         Args:
@@ -777,7 +834,9 @@ class RewardDetector:
 
         return change_result
 
-    async def _find_success_indicators(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def _find_success_indicators(
+        self, browser: BrowserManagerInterface
+    ) -> dict[str, Any]:
         """Find general success indicators in the UI.
 
         Args:
@@ -808,7 +867,11 @@ class RewardDetector:
                     found = await browser.find_element(selector, timeout=2000)
                     if found:
                         indicator_result["indicators"].append(
-                            {"type": "success_icon", "selector": selector, "confidence": 0.8}
+                            {
+                                "type": "success_icon",
+                                "selector": selector,
+                                "confidence": 0.8,
+                            }
                         )
                 except Exception:
                     continue
@@ -825,7 +888,9 @@ class RewardDetector:
 
         return indicator_result
 
-    def _calculate_validation_confidence(self, validation_result: Dict[str, Any]) -> float:
+    def _calculate_validation_confidence(
+        self, validation_result: dict[str, Any]
+    ) -> float:
         """Calculate overall validation confidence based on multiple factors.
 
         Args:
@@ -840,9 +905,9 @@ class RewardDetector:
             # UI feedback confidence
             ui_feedback = validation_result.get("ui_feedback_detected", [])
             if ui_feedback:
-                ui_confidence = sum(elem.get("confidence", 0.5) for elem in ui_feedback) / len(
-                    ui_feedback
-                )
+                ui_confidence = sum(
+                    elem.get("confidence", 0.5) for elem in ui_feedback
+                ) / len(ui_feedback)
                 confidence_factors.append(ui_confidence * 0.4)  # 40% weight
 
             # State change confidence
@@ -871,7 +936,9 @@ class RewardDetector:
             logger.debug("Validation confidence calculation failed", error=str(e))
             return 0.0
 
-    async def _capture_success_screenshot(self, browser: BrowserManagerInterface) -> bool:
+    async def _capture_success_screenshot(
+        self, browser: BrowserManagerInterface
+    ) -> bool:
         """Capture screenshot for successful claim verification.
 
         Args:
@@ -906,8 +973,11 @@ class RewardDetector:
             return False
 
     async def handle_claiming_errors(
-        self, browser: BrowserManagerInterface, error: Exception, context: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        self,
+        browser: BrowserManagerInterface,
+        error: Exception,
+        context: dict[str, Any] = None,
+    ) -> dict[str, Any]:
         """Enhanced error handling for reward claiming operations.
 
         Args:
@@ -938,18 +1008,25 @@ class RewardDetector:
 
         try:
             logger.error(
-                "Handling claiming error", error_type=type(error).__name__, context=context or {}
+                "Handling claiming error",
+                error_type=type(error).__name__,
+                context=context or {},
             )
 
             # Handle network timeout errors
             if (
-                isinstance(error, (NetworkTimeoutError, TimeoutError))
+                isinstance(error, NetworkTimeoutError | TimeoutError)
                 or "timeout" in str(error).lower()
             ):
-                handling_result.update(await self._handle_network_timeout(browser, error, context))
+                handling_result.update(
+                    await self._handle_network_timeout(browser, error, context)
+                )
 
             # Handle element not found errors
-            elif isinstance(error, ElementNotFoundError) or "not found" in str(error).lower():
+            elif (
+                isinstance(error, ElementNotFoundError)
+                or "not found" in str(error).lower()
+            ):
                 handling_result.update(
                     await self._handle_element_not_found(browser, error, context)
                 )
@@ -962,16 +1039,20 @@ class RewardDetector:
 
             # Handle unexpected UI changes
             elif isinstance(error, UIChangeError) or "ui" in str(error).lower():
-                handling_result.update(await self._handle_ui_changes(browser, error, context))
+                handling_result.update(
+                    await self._handle_ui_changes(browser, error, context)
+                )
 
             # Handle generic errors
             else:
-                handling_result.update(await self._handle_generic_error(browser, error, context))
+                handling_result.update(
+                    await self._handle_generic_error(browser, error, context)
+                )
 
             # Set timestamp
-            from datetime import datetime, timezone
+            from datetime import datetime
 
-            handling_result["timestamp"] = datetime.now(timezone.utc).isoformat()
+            handling_result["timestamp"] = datetime.now(UTC).isoformat()
 
             # Log comprehensive error context (without exposing secrets)
             self._log_error_context(handling_result, context)
@@ -983,8 +1064,11 @@ class RewardDetector:
         return handling_result
 
     async def _handle_network_timeout(
-        self, browser: BrowserManagerInterface, error: Exception, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self,
+        browser: BrowserManagerInterface,
+        error: Exception,
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """Handle network timeout scenarios during claiming."""
         result = {
             "recovery_attempted": True,
@@ -1010,7 +1094,9 @@ class RewardDetector:
             else:
                 result["recovery_success"] = False
                 result["fallback_available"] = True
-                logger.warning("Network connection still unstable, fallback strategy recommended")
+                logger.warning(
+                    "Network connection still unstable, fallback strategy recommended"
+                )
 
         except Exception as e:
             logger.error("Network timeout handling failed", error=str(e))
@@ -1019,8 +1105,11 @@ class RewardDetector:
         return result
 
     async def _handle_element_not_found(
-        self, browser: BrowserManagerInterface, error: Exception, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self,
+        browser: BrowserManagerInterface,
+        error: Exception,
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """Handle element not found errors with fallback strategies."""
         result = {
             "recovery_attempted": True,
@@ -1050,8 +1139,11 @@ class RewardDetector:
         return result
 
     async def _handle_authentication_failure(
-        self, browser: BrowserManagerInterface, error: Exception, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self,
+        browser: BrowserManagerInterface,
+        error: Exception,
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """Handle authentication failure detection and re-authentication logic."""
         result = {
             "recovery_attempted": True,
@@ -1081,8 +1173,11 @@ class RewardDetector:
         return result
 
     async def _handle_ui_changes(
-        self, browser: BrowserManagerInterface, error: Exception, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self,
+        browser: BrowserManagerInterface,
+        error: Exception,
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """Handle unexpected UI change detection and recovery procedures."""
         result = {
             "recovery_attempted": True,
@@ -1103,7 +1198,9 @@ class RewardDetector:
             else:
                 result["recovery_success"] = False
                 result["fallback_available"] = False
-                logger.warning("UI changes too significant, manual intervention may be needed")
+                logger.warning(
+                    "UI changes too significant, manual intervention may be needed"
+                )
 
         except Exception as e:
             logger.error("UI change handling failed", error=str(e))
@@ -1112,8 +1209,11 @@ class RewardDetector:
         return result
 
     async def _handle_generic_error(
-        self, browser: BrowserManagerInterface, error: Exception, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self,
+        browser: BrowserManagerInterface,
+        error: Exception,
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """Handle generic errors with basic recovery attempts."""
         result = {
             "recovery_attempted": True,
@@ -1150,7 +1250,7 @@ class RewardDetector:
             return False
 
     async def _try_fallback_selectors(
-        self, browser: BrowserManagerInterface, context: Dict[str, Any]
+        self, browser: BrowserManagerInterface, context: dict[str, Any]
     ) -> bool:
         """Try alternative selectors as fallback."""
         try:
@@ -1159,7 +1259,9 @@ class RewardDetector:
                 try:
                     detection_result = await strategy.detect_elements(browser)
                     if detection_result.get("found_elements"):
-                        logger.info("Fallback selector strategy worked", strategy=strategy.name)
+                        logger.info(
+                            "Fallback selector strategy worked", strategy=strategy.name
+                        )
                         return True
                 except Exception:
                     continue
@@ -1169,7 +1271,7 @@ class RewardDetector:
 
     async def _check_authentication_status(
         self, browser: BrowserManagerInterface
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Check current authentication status."""
         auth_status = {
             "authenticated": False,
@@ -1178,7 +1280,12 @@ class RewardDetector:
 
         try:
             # Look for login indicators
-            login_selectors = [".login-form", "#login", ".signin-btn", "[data-testid='login']"]
+            login_selectors = [
+                ".login-form",
+                "#login",
+                ".signin-btn",
+                "[data-testid='login']",
+            ]
 
             for selector in login_selectors:
                 try:
@@ -1197,14 +1304,22 @@ class RewardDetector:
 
         return auth_status
 
-    def _log_error_context(self, handling_result: Dict[str, Any], context: Dict[str, Any]) -> None:
+    def _log_error_context(
+        self, handling_result: dict[str, Any], context: dict[str, Any]
+    ) -> None:
         """Log comprehensive error context while preserving security."""
         try:
             # Create safe context (remove sensitive information)
             safe_context = {}
             if context:
                 for key, value in context.items():
-                    if key.lower() in ["password", "token", "secret", "key", "credential"]:
+                    if key.lower() in [
+                        "password",
+                        "token",
+                        "secret",
+                        "key",
+                        "credential",
+                    ]:
                         safe_context[key] = "[REDACTED]"
                     else:
                         safe_context[key] = str(value)[:100]  # Limit length
@@ -1220,7 +1335,9 @@ class RewardDetector:
         except Exception as e:
             logger.debug("Error context logging failed", error=str(e))
 
-    async def analyze_interface(self, browser: BrowserManagerInterface) -> Dict[str, Any]:
+    async def analyze_interface(
+        self, browser: BrowserManagerInterface
+    ) -> dict[str, Any]:
         """Analyze interface for reward detection opportunities.
 
         Args:
@@ -1268,7 +1385,9 @@ class RewardDetector:
                         analysis_result["selectors"].extend(result["selectors"])
 
                 except Exception as e:
-                    logger.warning("Strategy failed", strategy=strategy.name, error=str(e))
+                    logger.warning(
+                        "Strategy failed", strategy=strategy.name, error=str(e)
+                    )
                     continue
 
             if successful_strategies:
@@ -1277,14 +1396,20 @@ class RewardDetector:
                     key=lambda x: (x["confidence"], x["element_count"]), reverse=True
                 )
 
-                analysis_result["primary_strategy"] = successful_strategies[0]["strategy"]
+                analysis_result["primary_strategy"] = successful_strategies[0][
+                    "strategy"
+                ]
                 analysis_result["fallback_strategies"] = [
                     s["strategy"] for s in successful_strategies[1:]
                 ]
-                analysis_result["detection_confidence"] = successful_strategies[0]["confidence"]
+                analysis_result["detection_confidence"] = successful_strategies[0][
+                    "confidence"
+                ]
 
                 # Analyze reward states using primary strategy
-                reward_states = await self._analyze_reward_states(browser, successful_strategies[0])
+                reward_states = await self._analyze_reward_states(
+                    browser, successful_strategies[0]
+                )
                 analysis_result["reward_states"] = reward_states
 
                 logger.info(
@@ -1298,19 +1423,19 @@ class RewardDetector:
                 analysis_result["detection_confidence"] = 0.0
 
             # Set analysis timestamp
-            from datetime import datetime, timezone
+            from datetime import datetime
 
-            analysis_result["analysis_timestamp"] = datetime.now(timezone.utc).isoformat()
+            analysis_result["analysis_timestamp"] = datetime.now(UTC).isoformat()
 
             return analysis_result
 
         except Exception as e:
             logger.error("Interface analysis failed", error=str(e))
-            raise DetectionError(f"Interface analysis failed: {e}")
+            raise DetectionError(f"Interface analysis failed: {e}") from e
 
     async def _analyze_reward_states(
-        self, browser: BrowserManagerInterface, strategy_result: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, browser: BrowserManagerInterface, strategy_result: dict[str, Any]
+    ) -> dict[str, Any]:
         """Analyze reward availability states using DOM inspection.
 
         Args:
@@ -1330,7 +1455,9 @@ class RewardDetector:
 
         try:
             # Use the specific strategy to analyze states
-            strategy = self.strategy_factory.get_strategy_by_name(strategy_result["strategy"])
+            strategy = self.strategy_factory.get_strategy_by_name(
+                strategy_result["strategy"]
+            )
 
             if strategy and hasattr(strategy, "analyze_reward_states"):
                 states = await strategy.analyze_reward_states(browser)
@@ -1357,7 +1484,7 @@ class RewardDetector:
 
     async def find_best_selector(
         self, browser: BrowserManagerInterface, target_type: str = "signin_button"
-    ) -> Optional[str]:
+    ) -> str | None:
         """Find the most reliable selector for a specific target.
 
         Args:
@@ -1370,12 +1497,16 @@ class RewardDetector:
         try:
             for strategy in self.strategies:
                 if hasattr(strategy, "get_selector_for_target"):
-                    selector = await strategy.get_selector_for_target(browser, target_type)
+                    selector = await strategy.get_selector_for_target(
+                        browser, target_type
+                    )
                     if selector:
                         logger.info(
                             "Found selector for target",
                             target=target_type,
-                            selector=selector[:50] + "..." if len(selector) > 50 else selector,
+                            selector=selector[:50] + "..."
+                            if len(selector) > 50
+                            else selector,
                             strategy=strategy.name,
                         )
                         return selector
@@ -1389,7 +1520,7 @@ class RewardDetector:
 
     async def validate_selector_reliability(
         self, browser: BrowserManagerInterface, selector: str, attempts: int = 3
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Validate selector reliability through multiple attempts.
 
         Args:
@@ -1412,7 +1543,7 @@ class RewardDetector:
         try:
             find_times = []
 
-            for attempt in range(attempts):
+            for _ in range(attempts):
                 try:
                     start_time = asyncio.get_event_loop().time()
 
@@ -1436,7 +1567,9 @@ class RewardDetector:
             )
 
             if find_times:
-                validation_result["average_find_time"] = sum(find_times) / len(find_times)
+                validation_result["average_find_time"] = sum(find_times) / len(
+                    find_times
+                )
 
             logger.info(
                 "Selector reliability validated",
@@ -1451,7 +1584,9 @@ class RewardDetector:
 
         return validation_result
 
-    async def _test_selector(self, browser: BrowserManagerInterface, selector: str) -> bool:
+    async def _test_selector(
+        self, browser: BrowserManagerInterface, selector: str
+    ) -> bool:
         """Test if a selector can find elements on current page.
 
         Args:
