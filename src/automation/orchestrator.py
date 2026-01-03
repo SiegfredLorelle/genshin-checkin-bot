@@ -30,7 +30,7 @@ class AutomationOrchestrator:
         self.config = config_manager or ConfigurationManager()
         browser_config = self.config.get_browser_config()
         self.browser_manager = BrowserManager(
-            framework="playwright", headless=browser_config.get("headless", True)
+            headless=browser_config.get("headless", True)
         )
         self.reward_detector = RewardDetector()
         self.state_manager = StateManager()

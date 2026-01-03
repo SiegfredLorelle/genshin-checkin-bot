@@ -1,7 +1,6 @@
-"""Browser management with framework abstraction layer.
+"""Browser management for Playwright automation.
 
-This module provides a unified interface for browser automation,
-supporting both Playwright (primary) and Selenium (fallback) frameworks.
+This module provides a unified interface for Playwright browser automation.
 """
 
 from abc import ABC, abstractmethod
@@ -85,61 +84,47 @@ class BrowserManagerInterface(ABC):
 
 
 class BrowserManager:
-    """Main browser manager with framework selection logic."""
+    """Main browser manager for Playwright automation."""
 
-    def __init__(self, framework: str = "playwright", headless: bool = True):
-        """Initialize with specified framework.
+    def __init__(self, headless: bool = True):
+        """Initialize Playwright browser manager.
 
         Args:
-            framework: "playwright" (default) or "selenium"
             headless: Whether to run browser in headless mode
         """
-        self.framework = framework
         self.headless = headless
         self._browser_impl: Optional[BrowserManagerInterface] = None
 
     async def initialize(self) -> BrowserManagerInterface:
-        """Initialize the selected browser framework.
+        """Initialize Playwright browser framework.
 
         Returns:
             Browser implementation instance
 
         Raises:
-            ImportError: If framework dependencies are not available
-            RuntimeError: If framework initialization fails
+            ImportError: If Playwright dependencies are not available
+            RuntimeError: If browser initialization fails
         """
         try:
-            if self.framework == "playwright":
-                from .playwright_impl import PlaywrightBrowserManager
+            from .playwright_impl import PlaywrightBrowserManager
 
-                self._browser_impl = PlaywrightBrowserManager()
-            elif self.framework == "selenium":
-                from .selenium_impl import SeleniumBrowserManager
-
-                self._browser_impl = SeleniumBrowserManager()
-            else:
-                raise ValueError(f"Unsupported framework: {self.framework}")
-
+            self._browser_impl = PlaywrightBrowserManager()
             await self._browser_impl.launch(headless=self.headless)
-            logger.info("Browser framework initialized", framework=self.framework)
+            logger.info("Playwright browser initialized successfully")
             return self._browser_impl
 
         except ImportError as e:
             logger.error(
-                "Framework dependencies missing",
-                framework=self.framework,
+                "Playwright dependencies missing",
                 error=str(e),
             )
-            # Auto-fallback to Selenium if Playwright fails
-            if self.framework == "playwright":
-                logger.info("Attempting fallback to Selenium")
-                self.framework = "selenium"
-                return await self.initialize()
-            raise
+            raise ImportError(
+                "Playwright is not installed. Run: uv sync or "
+                "pip install playwright && playwright install chromium"
+            ) from e
         except Exception as e:
             logger.error(
-                "Framework initialization failed",
-                framework=self.framework,
+                "Playwright initialization failed",
                 error=str(e),
             )
-            raise RuntimeError(f"Failed to initialize {self.framework}: {e}")
+            raise RuntimeError(f"Failed to initialize Playwright: {e}") from e
