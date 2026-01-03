@@ -17,14 +17,10 @@ logger = structlog.get_logger(__name__)
 
 @dataclass
 class HoYoLABCredentials:
-    """HoYoLAB authentication credentials."""
+    """HoYoLAB authentication credentials for username/password login."""
 
-    ltuid: Optional[str] = None
-    ltoken: Optional[str] = None
-    account_id: Optional[str] = None
-    username: Optional[str] = None
-    password: Optional[str] = None
-    auth_method: str = "cookies"  # "cookies" or "login"
+    username: str
+    password: str
 
 
 class ConfigurationManager:
@@ -57,48 +53,24 @@ class ConfigurationManager:
         """
         if self._credentials is None:
             try:
-                # Determine authentication method
-                auth_method = config("AUTH_METHOD", default="cookies")
-
-                # Load credentials based on method
-                ltuid = config("HOYOLAB_LTUID", default=None)
-                ltoken = config("HOYOLAB_LTOKEN", default=None)
-                account_id = config("HOYOLAB_ACCOUNT_ID", default=None)
+                # Load username/password credentials
                 username = config("HOYOLAB_USERNAME", default=None)
                 password = config("HOYOLAB_PASSWORD", default=None)
 
-                # Validate credentials based on auth method
-                if auth_method == "login":
-                    if not username or not password:
-                        raise ConfigurationError(
-                            "Username and password required for login "
-                            "authentication method"
-                        )
-                    logger.info("Using username/password authentication")
-                elif auth_method == "cookies":
-                    if not ltuid or not ltoken:
-                        raise ConfigurationError(
-                            "LTUID and LTOKEN required for cookie authentication method"
-                        )
-                    logger.info("Using cookie-based authentication")
-                else:
-                    raise ConfigurationError(f"Invalid AUTH_METHOD: {auth_method}")
+                # Validate credentials
+                if not username or not password:
+                    raise ConfigurationError(
+                        "HOYOLAB_USERNAME and HOYOLAB_PASSWORD are required. "
+                        "Please set these environment variables."
+                    )
 
                 self._credentials = HoYoLABCredentials(
-                    ltuid=ltuid,
-                    ltoken=ltoken,
-                    account_id=account_id,
                     username=username,
                     password=password,
-                    auth_method=auth_method,
                 )
 
                 logger.info(
                     "HoYoLAB credentials loaded successfully",
-                    auth_method=auth_method,
-                    has_ltuid=bool(ltuid),
-                    has_ltoken=bool(ltoken),
-                    has_account_id=bool(account_id),
                     has_username=bool(username),
                     has_password=bool(password),
                 )

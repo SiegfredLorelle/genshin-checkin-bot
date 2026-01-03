@@ -48,16 +48,9 @@ jobs:
 
       - name: Run check-in automation
         env:
-          # Authentication Method Selection
-          AUTH_METHOD: ${{ vars.AUTH_METHOD || 'login' }}
-
-          # Method 1: Username/Password (Recommended - Default)
+          # Authentication
           HOYOLAB_USERNAME: ${{ secrets.HOYOLAB_USERNAME }}
           HOYOLAB_PASSWORD: ${{ secrets.HOYOLAB_PASSWORD }}
-
-          # Method 2: Cookies (Alternative - if AUTH_METHOD=cookies)
-          HOYOLAB_LTUID: ${{ secrets.HOYOLAB_LTUID }}
-          HOYOLAB_LTOKEN: ${{ secrets.HOYOLAB_LTOKEN }}
 
           # Configuration
           CHECKIN_URL: ${{ vars.CHECKIN_URL || 'https://act.hoyolab.com/ys/event/signin-sea-v3/index.html' }}

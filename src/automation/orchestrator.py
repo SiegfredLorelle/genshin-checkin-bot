@@ -420,7 +420,7 @@ class AutomationOrchestrator:
         logger.info("Navigated to HoYoLAB", url=hoyolab_url)
 
     async def _authenticate(self) -> bool:
-        """Execute authentication flow.
+        """Execute authentication flow using username/password login.
 
         Returns:
             True if authentication successful, False otherwise
@@ -431,14 +431,8 @@ class AutomationOrchestrator:
             # Get credentials from configuration
             credentials = self.config.get_hoyolab_credentials()
 
-            # Choose authentication method
-            if credentials.auth_method == "login":
-                # Use username/password login
-                auth_result = await self._login_with_credentials(credentials)
-            else:
-                # Use cookie-based authentication
-                await self._set_authentication_cookies(credentials)
-                auth_result = True
+            # Use username/password login
+            auth_result = await self._login_with_credentials(credentials)
 
             if not auth_result:
                 logger.warning("Authentication failed")
@@ -959,71 +953,6 @@ class AutomationOrchestrator:
             logger.error("✗ Login with credentials failed", error=str(e))
             return False
 
-    async def _set_authentication_cookies(self, credentials) -> None:
-        """Set HoYoLAB authentication cookies.
-
-        Args:
-            credentials: HoYoLAB credentials object
-        """
-        try:
-            # Set required HoYoLAB cookies for authentication
-            cookies = [
-                {
-                    "name": "ltuid",
-                    "value": credentials.ltuid,
-                    "domain": ".hoyolab.com",
-                    "path": "/",
-                    "secure": True,
-                    "httpOnly": False,
-                },
-                {
-                    "name": "ltoken",
-                    "value": credentials.ltoken,
-                    "domain": ".hoyolab.com",
-                    "path": "/",
-                    "secure": True,
-                    "httpOnly": False,
-                },
-            ]
-
-            if credentials.account_id:
-                cookies.append(
-                    {
-                        "name": "account_id",
-                        "value": credentials.account_id,
-                        "domain": ".hoyolab.com",
-                        "path": "/",
-                        "secure": True,
-                        "httpOnly": False,
-                    }
-                )
-
-            # Set cookies using browser implementation
-            for cookie in cookies:
-                await self._set_browser_cookie(cookie)
-
-            logger.info("Authentication cookies set", cookie_count=len(cookies))
-
-        except Exception as e:
-            logger.error("Failed to set authentication cookies", error=str(e))
-            raise AuthenticationError(f"Cookie setting failed: {e}")
-
-    async def _set_browser_cookie(self, cookie: dict) -> None:
-        """Set cookie using browser implementation.
-
-        Args:
-            cookie: Cookie dictionary with name, value, domain, etc.
-        """
-        try:
-            logger.debug("Setting cookie", name=cookie["name"], domain=cookie["domain"])
-            await self.browser_impl.set_cookie(cookie)
-
-        except Exception as e:
-            logger.error(
-                "Failed to set cookie", cookie_name=cookie.get("name"), error=str(e)
-            )
-            raise
-
     async def _validate_authentication(self) -> bool:
         """Validate that authentication was successful.
 
@@ -1032,8 +961,6 @@ class AutomationOrchestrator:
         """
         try:
             # Check for authentication indicators on the page
-            # This is a placeholder implementation for MVP
-
             logger.info("Validating authentication state")
 
             # In a real implementation, we would:
@@ -1041,7 +968,7 @@ class AutomationOrchestrator:
             # 2. Verify no login prompts are present
             # 3. Test API endpoints that require authentication
 
-            # For MVP, we'll assume success if cookies were set
+            # For MVP, we'll assume success after login flow completes
             return True
 
         except Exception as e:
