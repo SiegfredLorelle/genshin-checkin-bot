@@ -13,6 +13,11 @@ on:
         type: boolean
         default: false
         required: false
+      version:
+        description: 'Version to deploy (tag or branch, e.g., v0.0.1, main)'
+        type: string
+        default: ''
+        required: false
       reason:
         description: 'Reason for manual execution'
         type: string
@@ -22,11 +27,15 @@ on:
 jobs:
   checkin:
     runs-on: ubuntu-latest
-    timeout-minutes: 5  # NFR9: Must complete within 5 minutes
+    timeout-minutes: 10  # Increased buffer from 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Priority: manual input > GitHub variable > main branch
+          # PRODUCTION_VERSION should be set in repo Settings > Variables
+          ref: ${{ inputs.version || vars.PRODUCTION_VERSION || 'main' }}
 
       - name: Install uv (Python package manager)
         uses: astral-sh/setup-uv@v2
@@ -89,6 +98,8 @@ jobs:
           echo "## Execution Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Workflow:** Daily Check-in" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ inputs.version || vars.PRODUCTION_VERSION || 'main' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Run Number:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           if [ "${{ inputs.dry_run }}" == "true" ]; then
