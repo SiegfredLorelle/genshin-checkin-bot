@@ -5,8 +5,7 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 | Category | Technology | Version | Purpose | Rationale |
 |----------|------------|---------|---------|-----------|
 | Backend Language | Python | 3.11+ | Core automation logic and browser control | Mature ecosystem for web automation, excellent library support, readable for educational goals, modern performance improvements |
-| Browser Automation | Playwright | ^1.40.0 | Primary web automation framework | Superior reliability vs Selenium, better async support, built-in waiting strategies, excellent debugging tools |
-| Browser Automation (Fallback) | Selenium WebDriver | ^4.15.0 | Backup automation option | Widely documented, fallback if Playwright issues, industry standard for learning |
+| Browser Automation | Playwright | ^1.40.0 | Web automation framework | Superior reliability, excellent async support, built-in waiting strategies, automatic browser management, excellent debugging tools |
 | Browser Engine | Chromium | Latest (via Playwright) | Headless browser execution | Consistent rendering, good GitHub Actions support, reliable automation target |
 | HTTP Client | httpx | ^0.25.0 | API requests and session management | Async support, better than requests for automation, HTTP/2 support |
 | Configuration Management | python-decouple | ^3.8 | Environment variable handling | Secure config management, no hardcoded secrets, type conversion support |
@@ -39,6 +38,8 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 - `.github/workflows/manual-trigger.yml` → Integrated into `.github/workflows/daily-checkin.yml` (workflow_dispatch)
 
 This consolidation maintains all documented functionality while reducing file complexity.
+
+**Framework Simplification:** Selenium WebDriver was removed from the project as Playwright proved reliable and consistent. The project now uses Playwright exclusively for browser automation.
 
 **CLI Entry Point:** Added `src/__main__.py` for direct module execution via `uv run python -m src`
 

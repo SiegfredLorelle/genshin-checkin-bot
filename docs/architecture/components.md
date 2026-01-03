@@ -46,14 +46,14 @@ Based on the architectural patterns, tech stack, and data models from above, the
 **Responsibility:** Browser lifecycle management including initialization, authentication, navigation, and cleanup with anti-bot detection measures.
 
 **Key Interfaces:**
-- `initialize_browser()` - Setup Playwright/Selenium with proper configuration
+- `initialize_browser()` - Setup Playwright with proper configuration
 - `authenticate_session()` - Handle HoYoLAB login flow with credential security
 - `navigate_to_checkin()` - Navigate to check-in page with wait conditions
 - `capture_failure_screenshot()` - Debug evidence collection
 
 **Dependencies:** ConfigurationManager for browser settings and credentials
 
-**Technology Stack:** Playwright (primary), Selenium WebDriver (fallback), httpx for session management
+**Technology Stack:** Playwright, httpx for session management
 
 ## RewardDetector
 
@@ -159,7 +159,7 @@ graph TB
     Detector --> Browser
     State --> Config
 
-    Browser --> Playwright[Playwright/Selenium]
+    Browser --> Playwright[Playwright]
     Config --> Secrets[GitHub Secrets]
     State --> FileSystem[JSON Files]
 
@@ -178,7 +178,7 @@ graph TB
 
 **Completed Components:**
 - ✅ AutomationOrchestrator (complete workflow with dry-run support)
-- ✅ BrowserManager (Playwright primary, Selenium fallback abstraction)
+- ✅ BrowserManager (Playwright abstraction)
 - ✅ RewardDetector (complete with red point detection, claiming, validation)
 - ✅ ConfigurationManager (dual auth methods, GitHub Secrets ready)
 - ✅ StateManager (JSONL logging with analytics)
