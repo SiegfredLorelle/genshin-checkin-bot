@@ -5,7 +5,7 @@ and configuration validation for automation components.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any
 
 import structlog
 from decouple import config
@@ -28,8 +28,8 @@ class ConfigurationManager:
 
     def __init__(self):
         """Initialize configuration manager."""
-        self._credentials: Optional[HoYoLABCredentials] = None
-        self._config_cache: Dict[str, Any] = {}
+        self._credentials: HoYoLABCredentials | None = None
+        self._config_cache: dict[str, Any] = {}
 
     def get_hoyolab_url(self) -> str:
         """Get HoYoLAB URL for automation.
@@ -76,11 +76,13 @@ class ConfigurationManager:
                 )
 
             except Exception as e:
-                raise ConfigurationError(f"Failed to load HoYoLAB credentials: {e}")
+                raise ConfigurationError(
+                    f"Failed to load HoYoLAB credentials: {e}"
+                ) from e
 
         return self._credentials
 
-    def get_browser_config(self) -> Dict[str, Any]:
+    def get_browser_config(self) -> dict[str, Any]:
         """Get browser configuration settings.
 
         Returns:
@@ -103,7 +105,7 @@ class ConfigurationManager:
             },
         }
 
-    def get_detection_config(self) -> Dict[str, Any]:
+    def get_detection_config(self) -> dict[str, Any]:
         """Get reward detection configuration.
 
         Returns:
@@ -127,7 +129,7 @@ class ConfigurationManager:
             ],
         }
 
-    def get_timing_config(self) -> Dict[str, Any]:
+    def get_timing_config(self) -> dict[str, Any]:
         """Get anti-bot timing configuration.
 
         Returns:
@@ -141,7 +143,7 @@ class ConfigurationManager:
             "random_variance": config("TIMING_VARIANCE", default=0.3, cast=float),
         }
 
-    def redact_secrets(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def redact_secrets(self, data: dict[str, Any]) -> dict[str, Any]:
         """Redact sensitive information from data for safe logging.
 
         Args:

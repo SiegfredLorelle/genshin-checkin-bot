@@ -4,7 +4,6 @@ This module provides a unified interface for Playwright browser automation.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import structlog
 
@@ -93,7 +92,7 @@ class BrowserManager:
             headless: Whether to run browser in headless mode
         """
         self.headless = headless
-        self._browser_impl: Optional[BrowserManagerInterface] = None
+        self._browser_impl: BrowserManagerInterface | None = None
 
     async def initialize(self) -> BrowserManagerInterface:
         """Initialize Playwright browser framework.
