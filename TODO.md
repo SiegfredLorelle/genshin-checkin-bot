@@ -120,7 +120,12 @@
 - [ ] Update architecture docs based on current POC implementation
 - [ ] Update PRD to reflect production requirements
 - [ ] Document implementation learnings and decisions
-- [ ] Create deployment guide for chosen platform
+- [ ] Create deployment guide for chosen platformi
+
+### README changes?
+- [ ] Recommend them to just fork the app and setup their own secrets rather than having them clone locally
+- [ ] For `uv`, check first if they already have it installed, same with `python`, etc.
+- [ ] Just run `uv run ruff` rather than each of the code quality commands
 
 ---
 
